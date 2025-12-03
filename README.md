@@ -76,11 +76,6 @@ _Every action taken in this ecosystem is cryptographically attributed, fully com
 
 This README guarantees legal compliance, authorship protection, technical traceability, and safe collaborative research, addressing all current asset, audit, and operational policies for shared development under your protected ecosystem.[1][4][3][5][2]
 
-[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_24c04dfb-019d-4ccc-95f0-0db343bb66fb/e588431b-2076-492d-958b-5ffb43d24cd9/expand-the-following-statement-v6wJO61VRqK8KMNOUt.iVw.md)
-[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_24c04dfb-019d-4ccc-95f0-0db343bb66fb/3486ea1e-1147-4860-9cb9-c34a0ee48d18/design-a-layout-for-a-perplexi-xAKdNQJASWqCzlJ0IN0eUg.md)
-[3](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_24c04dfb-019d-4ccc-95f0-0db343bb66fb/64f5d716-6037-4e8c-8baa-114e7cd882f5/based-on-the-context-below-exp-TxomToIPQ_OJeS.nhcSiyA.md)
-[4](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_24c04dfb-019d-4ccc-95f0-0db343bb66fb/674d24ba-4bd2-4cdd-946e-2d60753bb183/filename-superliquid-inc-space-TxomToIPQ_OJeS.nhcSiyA.md)
-[5](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_24c04dfb-019d-4ccc-95f0-0db343bb66fb/b268bb46-b5c7-4ba6-bd2f-0c15f107543c/we-can-t-not-and-will-ever-bre-_3fnmUD7QWOeYmpyZOp0Vw.md)
 
 ![Compliance Banner](./docs/badges/compliance-banner.svg)
 
