@@ -1,0 +1,28 @@
+name: Secure CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  assert-critical-files:
+    name: Assert Critical Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@v2.12.0
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: audit
+      - uses: dawidd6/action-download-artifact@v6
+        with:
+          allow_forks: false
+      - name: Assert Files Presence
+        uses: ./.github/actions/assert-files
+        with:
+          files: |
+            .bit/linking.repo.bit.yml
+            .bit/loaders/validate_loop.sh
+            scripts/resync-ingestion.sh
+          require_exec: "true"

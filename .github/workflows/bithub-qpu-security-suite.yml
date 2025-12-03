@@ -1,0 +1,105 @@
+# Workflow: Bit.Hub QPU Security Suite (Security/Reproducibility/ALN)
+# Purpose: Frequent remote-access blocking, root/kernel/intrusion scans, sudo-ghost removal; all artifacts securely uploaded and all steps fully auditable.
+
+name: Bit.Hub QPU Security Suite
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"     # Every 30 minutes
+  workflow_dispatch:
+
+env:
+  REPORT_DIR: .bithub/reports
+
+permissions:
+  contents: write
+  actions: write
+  id-token: write
+
+concurrency:
+  group: qpu-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  security_sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository (safe)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          clean: true
+
+      - name: Install security audit tools (hardened)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y lsof chkrootkit rkhunter jq curl
+
+      - name: Block/disallow remote access (e.g., SSH)
+        run: |
+          set -euo pipefail
+          if sudo systemctl is-active --quiet ssh; then
+            sudo systemctl stop ssh
+            sudo systemctl disable ssh
+            echo "::notice::SSH disabled (remote access locked)"
+          else
+            echo "SSH already disabled."
+          fi
+
+      - name: Audit for open ports/root/intrusion
+        run: |
+          set -euo pipefail
+          mkdir -p ${REPORT_DIR}/audit
+          lsof -i -n -P > ${REPORT_DIR}/audit/lsof-ports.txt || true
+          sudo chkrootkit | tee ${REPORT_DIR}/audit/chkrootkit.txt
+          sudo rkhunter --check --sk --nocolors --report-warnings-only > ${REPORT_DIR}/audit/rkhunter.txt || true
+
+      - name: Sudo-ghost/rootkit removal (local only)
+        run: |
+          set -euo pipefail
+          # Do not run remote scripts; only invoke trusted, local scripts you audit/maintain.
+          if [ -x ./bithub/scripts/remove_sudo_ghost.sh ]; then
+            sudo ./bithub/scripts/remove_sudo_ghost.sh | tee ${REPORT_DIR}/audit/sudo_ghost_removal.log
+          else
+            echo "No sudo-ghost removal script available; skipping."
+          fi
+
+      - name: Generate SBOM with Syft (if available)
+        run: |
+          set -euo pipefail
+          mkdir -p ${REPORT_DIR}/sbom
+          if [ -x ./syft ]; then
+            ./syft packages dir:. -o json > ${REPORT_DIR}/sbom/syft-dir.json || true
+          else
+            echo "::warning::Syft not available; SBOM skipped."
+          fi
+
+      - name: Attestation (provenance predicate)
+        run: |
+          set -euo pipefail
+          mkdir -p ${REPORT_DIR}/attest
+          cat > ${REPORT_DIR}/attest/in-toto-predicate.json <<JSON
+{
+  "_type": "bithub/supremacy",
+  "predicateType": "https://in-toto.io/Statement/v1",
+  "builder": { "id": "bitbot" },
+  "environment": { "powerThreshold": "strict" },
+  "details": {
+    "scan": "QPU Security Suite",
+    "ts": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  }
+}
+JSON
+
+      - name: Upload all security and audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qpu-security-suite-artifacts
+          path: |
+            ${REPORT_DIR}/sbom/**
+            ${REPORT_DIR}/attest/**
+            ${REPORT_DIR}/audit/**
+          if-no-files-found: warn

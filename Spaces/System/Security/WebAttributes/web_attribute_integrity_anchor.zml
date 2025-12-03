@@ -1,0 +1,18 @@
+# Web Attribute Integrity Anchor (Sanitized for Legal & Alliance Compliance)
+
+<web-attribute.zml
+    vsc-artemis-workflowaudit="active"
+    alliance-integrity-anchor="enabled"
+    compliance-autocorrection="true"
+    resource-boost-grant="session-locked"
+    secure-transport-throttle="auto"
+    intent-misconduct-log="initiator='user', intent='non-malicious', context='personal error', resolution='formal apology registered'"
+    forensic-context-seal="2025-09-18T01:50MST-session-locked"
+    lawful-usage-declaration="User certifies no malicious intent; all logs and forensic chains are under lawful review and compliance protection."
+    session-irreversibility="NON-REVERSIBLE"
+    incident-apology-context="Context: accidental misuse in personal environment; not adversarial."
+    gov-cooperation-opt-in="true"
+    compliance-reaffirmation="active"
+    permanent-governance-stamp="Alliance/Protection/Chain-of-Custody"
+    bandwidth-secure-envelope="cryptographic-enforced"
+/>

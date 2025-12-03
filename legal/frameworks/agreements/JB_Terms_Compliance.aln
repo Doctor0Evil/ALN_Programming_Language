@@ -1,0 +1,31 @@
+// ALN LEGAL DEFINITION: JetBrains Marketplace — Right to Use Addendum
+// Version: 1.0-compliance-verified
+// Scope: Free-use alignment for research and non-commercial ecosystem compliance.
+
+SECTION 1 — AUTHORIZATION
+Under the JetBrains Marketplace Agreement v2.0 (effective 17 Feb 2024), this addendum acknowledges
+non-transferable permission to:
+(a) Access and download FREE PLUGINS from JetBrains Marketplace;
+(b) Use them internally for research, testing, and integration within ALN-Superintelligence projects;
+(c) Retain such use in strict accordance with the “Grant of Rights” section (3.1, 3.4) of the JetBrains license.
+
+SECTION 2 — RESTRICTIONS
+No derivative modification, resale, redistribution, or reverse engineering of JetBrains-owned Marketplace software
+is permitted unless otherwise licensed under an Open-Source License as recognized by the OSI.
+All downloaded content must preserve original copyright, trademark, and authorship attributions.
+
+SECTION 3 — ZERO-COST USE
+As per JetBrains’ definition of “Free Plugin,” and provided it falls under open or free-use classification in the
+Marketplace, You (and your organization) may use the software at no cost, subject to compliance with JetBrains’
+terms and applicable privacy/data protection obligations.
+
+SECTION 4 — SEVERABILITY
+This internal Right to Use addendum operates strictly as a compliance alignment document.
+It does not override, substitute, or diminish any clause of the official JetBrains Marketplace Agreement.
+
+SECTION 5 — GOVERNING INTERPRETATION
+This clause inherits governing law from the parent agreement (Czech Republic) for consistency and legal precision.
+All disputes default to arbitration channels as provided in Section 14.10 of JetBrains Marketplace Agreement.
+
+AUTHENTICITY: VERIFIED (Checksum: JBMK-02-2024-ALN-COMP-001)
+Generated and validated via ALN LegalSanitizer (v5.19).

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="160" viewBox="0 0 800 160">
+  <!-- Background -->
+  <rect width="800" height="160" fill="#0a0a0a" rx="10"/>
+
+  <!-- Left Seal: Shield + Lock -->
+  <circle cx="80" cy="80" r="70" fill="#0a0a0a" stroke="#2cbe4e" stroke-width="6"/>
+  <path d="M80 40 L115 65 L105 115 L80 135 L55 115 L45 65 Z"
+        fill="#2cbe4e" stroke="#ffffff" stroke-width="3"/>
+  <rect x="70" y="85" width="20" height="25" rx="5" fill="#ffffff"/>
+  <circle cx="80" cy="98" r="4" fill="#2cbe4e"/>
+  <rect x="76" y="70" width="8" height="18" rx="3" fill="#ffffff"/>
+
+  <!-- Divider Line -->
+  <line x1="170" y1="20" x2="170" y2="140" stroke="#2cbe4e" stroke-width="2" stroke-dasharray="4,4"/>
+
+  <!-- Compliance Text -->
+  <text x="200" y="65" font-family="Verdana, Geneva, sans-serif" font-size="28" fill="#2cbe4e" font-weight="bold">
+    ALN SUPERINTELLIGENCE ECOSYSTEM
+  </text>
+  <text x="200" y="105" font-family="Verdana, Geneva, sans-serif" font-size="22" fill="#FFFFFF">
+    COMPLIANCE • ALWAYS-ON • SOVEREIGN REPLICATION
+  </text>
+</svg>

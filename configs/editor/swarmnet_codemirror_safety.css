@@ -1,0 +1,120 @@
+/* Swarmnet CodeMirror Human Rights Secure Editor Theme (ALN syntax compliant) */
+
+/* General Editor Safety and Appearance */
+.cm-editor-root {
+  background: var(--codeMirror-bgColor, #1e222c);
+  color: var(--codeMirror-fgColor, #d0d3d6);
+  font-family: var(--fontStack-monospace, Consolas, 'Fira Mono', 'Menlo', 'Monaco', monospace);
+  font-size: var(--codeMirror-content-fontSize, 12px);
+  line-height: 20px;
+  outline: none;
+  min-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Line numbers gutter */
+.cm-gutter.cm-lineNumbers {
+  background: var(--codeMirror-gutters-bgColor, #232632);
+  color: var(--codeMirror-lineNumber-fgColor, #8892b0);
+  border-right-width: 0;
+  font-size: var(--codeMirror-gutter-fontSize, 12px);
+  line-height: 20px;
+  padding: 0 16px 0 16px;
+  user-select: none;
+}
+
+/* Current line highlight */
+.cm-activeLine {
+  background-color: var(--codeMirror-activeLine-bgColor, #282c3699);
+}
+
+/* Selection highlight */
+.cm-content ::selection,
+.cm-selectionBackground {
+  background: var(--codeMirror-selection-bgColor, #d7d4f0);
+}
+
+/* Syntax highlighting (ALN-compliant classes) */
+.cm-keyword     { color: var(--codeMirror-syntax-fgColor-keyword, #b349b3); }
+.cm-variable    { color: var(--codeMirror-syntax-fgColor-variable, #2a80c8); }
+.cm-string      { color: var(--codeMirror-syntax-fgColor-string, #c18f36); }
+.cm-constant    { color: var(--codeMirror-syntax-fgColor-constant, #e06889); }
+.cm-entity      { color: var(--codeMirror-syntax-fgColor-entity, #79c6b6); }
+.cm-comment     { color: var(--codeMirror-syntax-fgColor-comment, #6a9955); font-style: italic; }
+
+/* Error and warning highlighting */
+.cm-error-highlight {
+  background-color: var(--codeMirror-error-bgColor, #ff3322cc);
+  color: #fff;
+}
+
+/* Tab highlight icon (SVG inline for accessibility) */
+.cm-highlightTab {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="20"><path stroke="grey" stroke-width="1" fill="none" d="M1 10H196L190 5M190 15L196 10M197 4L197 16"/></svg>');
+  background-size: auto 100%;
+  background-position: right 90%;
+  background-repeat: no-repeat;
+}
+
+/* Placeholders for empty textfields */
+.cm-placeholder {
+  color: #bbbbbb;
+  font-size: 85%;
+  border: 1px solid #cccccc;
+  padding: .2em .5em;
+  background: #fafbfc;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
+/* Enforced Ethical-Safety CSS Properties */
+/**
+  All interactive editing areas must feature:
+    - No tracking pixels (privacy enforcement)
+    - No hidden telemetry
+    - Explicit consent for data storage (userData)
+    - Accessibility compliance (WCAG AA minimum)
+    - Secure localStorage/data handling (see Rego policy)
+**/
+
+/* Hide telemetry analytics elements by default */
+[data-analytics], [data-telemetry], .hidden-telemetry {
+  display: none !important;
+}
+
+/* Secure local storage activation notice*/
+.cm-secureLocalStorage {
+  display: block;
+  background: #eff6f8;
+  color: #20445b;
+  font-size: 12px;
+  padding: .5em;
+  margin-top: 8px;
+  border-radius: 2px;
+}
+
+/* Button styling (for user consent actions) */
+.cm-button,
+.cm-button:active {
+  background-image: linear-gradient(#eff1f5, #d7e3ec);
+  color: #20445b;
+  padding: .35em 1.2em;
+  border-radius: 1px;
+  border: 1px solid #b4b4b4;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* Debug log area styling for SAI/MAI integrity checks */
+.cm-debug-log {
+  background: #101211;
+  color: #9ca8aa;
+  font-size: 12px;
+  font-family: monospace;
+  padding: 0.5em 1em;
+  border-top: 1px solid #293042;
+  border-bottom: 1px solid #293042;
+}
+
+/* End human rights and ethical-safety enforcement zone */

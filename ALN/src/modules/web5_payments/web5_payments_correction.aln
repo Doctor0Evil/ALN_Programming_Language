@@ -1,0 +1,48 @@
+@WEB5_KYC_PAYMENT_FIX {
+  def: "Ensures KYC and DID verified payments cannot reroute to fallback card processors except as a last resort. Restores atomicity between KYC → Payment verification.",
+  on_kyc_success: {
+    enforce: [
+      "web5_did_verified",
+      "compliance_gate_passed"
+    ],
+    action: [
+      "enable_web5_payment_module",
+      "disable_fallback_card_entry",
+      "log_state: 'kyc_passed_web5_only'"
+    ]
+  },
+  on_kyc_failure: {
+    trigger: [
+      "compliance_reassessment",
+      "fallback_notify_admin"
+    ],
+    fallback_path: [
+      "cashapp_paypal_fallback_enabled"
+    ]
+  },
+  on_payment_attempt: {
+    validate: [
+      "check_kyc_state",
+      "if kyc != pass → block_web5 and notify"
+    ],
+    action: [
+      "prohibit_browser_card_form_if_kyc_passed"
+    ]
+  },
+  audit: {
+    channel: ["loki", "redis", "blockchain_dlt"],
+    detail: "Force logging all payment reroutes, audit failure causes in 'web5_kyc_payments_audit.log'"
+  }
+}
+@CI_JOB web5_payments_patch {
+  steps: [
+    "pull: web5_payments_correction.aln",
+    "test: simulate KYC pass → ensure card-entry not shown",
+    "test: simulate KYC fail → check fallback works, admin notified",
+    "deploy: replace payment module in /ALN/src/modules/web5_payments/"
+  ],
+  notify: [
+    "loki",
+    "admin_team"
+  ]
+}

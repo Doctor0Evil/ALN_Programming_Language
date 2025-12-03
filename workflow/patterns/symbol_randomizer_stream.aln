@@ -1,0 +1,35 @@
+# Stream-Based Symbol Randomizer Compiler
+# Secure Workflow: Generates 1–24 length randomizable combos directly to disk (no RAM bottleneck)
+
+DEFINE symbol_map AS {
+    "⟒": "A", "⍀": "R", "⏃": "E", "⌿": "S",
+    "☊": "T", "⋏": "N", "☍": "C", "⋔": "M",
+    "⊬": "L", "⎍": "O", "⌇": "P", "⎅": "G",
+    "⟟": "I", "⏁": "B", "⎎": "D", "⏚": "Y"
+}
+
+# Maps symbols to readable characters
+FUNCTION map_symbols(input_str):
+    STREAM output TO /data/temp/symbol_map_output.txt
+    FOR EACH ch IN input_str:
+        IF ch IN symbol_map:
+            WRITE symbol_map[ch] TO output
+        ELSE:
+            WRITE ch TO output
+    CLOSE output
+
+# Generate random combinations and stream them safely to file
+FUNCTION generate_random_stream(charset, min_len=1, max_len=24, output_file="/data/safe/random_combos.log"):
+    OPEN STREAM output_file
+    FOR LENGTH FROM min_len TO max_len:
+        FOR COMBO IN PERMUTE_WITH_REPEAT_STREAM(charset, LENGTH):
+            WRITE CONCAT(COMBO) TO output_file
+    CLOSE STREAM
+    RETURN "Completed streaming random combinations."
+
+# Core Execution Sequence
+SET decoded_text TO map_symbols("⟒⍀⏃⌿☊⋏☍⋔⟟⏁⎎⎅")
+SET charset TO UNIQUE_CHARS(decoded_text)
+generate_random_stream(charset, 1, 24, "/secure_output/symbol_random.log")
+
+LOG "Streaming compiler successfully executed to disk."

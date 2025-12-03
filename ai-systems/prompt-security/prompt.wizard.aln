@@ -1,0 +1,59 @@
+program Prompt.Wizard {
+  version: "v1.3-secure"
+  description: """
+    Prompt.Wizard (PW) is an automated, feedback-driven prompt optimization framework engineered for allied, compliant, and harm-free AI operations. It leverages self-review cycles, iterative refinement, and embedded policy logic to generate ethically filtered, safe, and verifiable instruction sets for large-scale LLM deployments. 
+    System functions adhere to prompt security, guardrail compliance, and transparency standards in accordance with enterprise-grade AI safety guidelines by regulators including NIST AI RMF, ISO/IEC 23894, and the 2023 U.S. AI Executive Order.
+  """
+
+  workflow {
+    phases: [
+      {name: "MultiPrompt.Generation", description: "Generate prompt variants under aligned ethical constraints."},
+      {name: "Self.Critique.Refinement", description: "Run iterative self-review cycles to remove bias or unsafe content, enforcing neutrality."},
+      {name: "Instruction.Example.Pairing", description: "Pair refined prompts with context examples to ensure clarity, role alignment, and non-harm."},
+      {name: "Safety.Documentation", description: "Attach metadata, audit stamps, and versioning for traceability and human oversight."}
+    ]
+  }
+
+  compliance {
+    input_validation: ["rule-based filtering", "contextual NLP risk scoring", "API moderation hooks"]
+    content_filtering: ["sentiment and bias detection", "RedHat/CyberSec-compliant keyword banning"]
+    audit_requirements: true
+    references: ["Portkey.AI Guardrails", "AWS Prompt Templates", "Azure Prompt Shield API", "OpenAI Moderation API"]
+    anti_attack_mechanisms: ["prompt injection sandboxing", "context compartmentalization", "template anchoring"]
+  }
+
+  safety {
+    ethical_policies: [
+      "avoid_harm",
+      "promote_equity_and_alliance",
+      "ensure_auditability",
+      "sustain_human_review_in_loop"
+    ]
+    fallback_policy: "block and log if compliance score < 0.95"
+    revision_cycle_days: 30
+  }
+
+  data_infrastructure {
+    metrics_tracked: ["false_positive_rate", "bias_confidence_score", "contextual_risk_factor"]
+    telemetry: "forensic mode (opt-out restricted)"
+    retention_days: 730
+    governance: "Alliance Code of AI Conduct v2025"
+  }
+
+  output_model {
+    template_syntax: """
+      prompt_instruction: <task_description>
+      context_examples: [<example_input>, <example_output>]
+      compliance_stamp: SHA512(input+output)
+      rating_threshold: >= 0.95 (trust, safety, transparency)
+      audit_state: linked to ALN ledger
+    """
+  }
+
+  operational_mode {
+    supervision: ["AI-supervised", "Legal-reviewed"]
+    change_tracking: true
+    jurisdiction: ["U.S. federal AI safety framework", "EU AI Act Tier III"]
+    sandbox: "non-production safe-LLM mode"
+  }
+}

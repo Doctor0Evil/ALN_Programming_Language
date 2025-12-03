@@ -1,0 +1,245 @@
+name: Bit.Hub Master Orchestrator — Universal Compliance Core
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_run:
+    workflows:
+      - Bit.Hub Pipeline Supremacy CI
+      - Bit.Hub Policy Scorecard Gate
+      - "*"
+    types:
+      - completed
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      default_threshold:
+        description: "standard | strict | paranoid"
+        type: choice
+        default: "strict"
+        options: [ "standard", "strict", "paranoid" ]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: bithub-master-orchestrator-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BIT_HUB_REPO_URL: "https://github.com/Doctor0Evil/Bit.Hub.git"
+  REPORT_DIR: ".bithub/reports"
+  EVENTS_DIR: ".bithub/events"
+  POWER_THRESHOLD: ${{ inputs.default_threshold || vars.POWER_THRESHOLD || 'strict' }}
+
+jobs:
+  workflow-loop-controller:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Self
+        uses: actions/checkout@v4
+      - name: Record Active Workflows
+        run: |
+          gh run list --json database,headBranch,status --limit 50 > .bithub/loop-state.json
+      - name: Store State Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bithub-loop-state
+          path: .bithub/loop-state.json
+      - name: Loopback Notification
+        run: echo "BitHub continuous workflow loop recorded at $(date -u)"
+
+  bootstrap_and_reason:
+    name: Bootstrap Compliance Core & Reason
+    runs-on: ubuntu-latest
+    outputs:
+      plan_path: ${{ steps.hrm.outputs.plan_path }}
+      threshold: ${{ steps.hrm.outputs.threshold }}
+      run_pipeline: ${{ steps.hrm.outputs.run_pipeline }}
+      run_policy_gate: ${{ steps.hrm.outputs.run_policy_gate }}
+      run_meta_corrector: ${{ steps.hrm.outputs.run_meta_corrector }}
+      run_container_wall: ${{ steps.hrm.outputs.run_container_wall }}
+      run_release_lmfao: ${{ steps.hrm.outputs.run_release_lmfao }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync Universal Compliance Core
+        run: |
+          set +e
+          if git ls-remote "$BIT_HUB_REPO_URL" &>/dev/null; then
+            git clone --depth=1 "$BIT_HUB_REPO_URL" /tmp/bithub
+            rsync -av --ignore-existing /tmp/bithub/.bithub/policy/ .bithub/policy/ || true
+            rsync -av --ignore-existing /tmp/bithub/.bit/schemas/ .bit/schemas/ || true
+            rsync -av --ignore-existing /tmp/bithub/.bitbots/ .bitbots/ || true
+          else
+            echo "::warning::Canonical repo unreachable — using local copies."
+          fi
+          set -e
+      - name: Run Humor-Reasoning-Model
+        id: hrm
+        uses: ./.github/actions/humor-reasoning-model
+        with:
+          default_threshold: ${{ env.POWER_THRESHOLD }}
+      - name: Show plan
+        run: cat "${{ steps.hrm.outputs.plan_path }}" || true
+
+  sync_and_correct:
+    needs: [bootstrap_and_reason]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: STRICT Intelligence Enforcement & Personality Vector Gate
+        run: |
+          echo "## STRICT Intelligence Enforcement" >> "$GITHUB_STEP_SUMMARY"
+          PV_FILE=".bit/databank/personality_vectors.json"
+          if [ -f "$PV_FILE" ]; then
+            compscore=$(jq -r '.compscore // 0' "$PV_FILE")
+            profanity=$(jq -r '.profanity // 0' "$PV_FILE")
+            echo "- compscore: $compscore" >> "$GITHUB_STEP_SUMMARY"
+            echo "- profanity: $profanity" >> "$GITHUB_STEP_SUMMARY"
+            cat >> "$GITHUB_STEP_SUMMARY" <<'EOT'
+**Non-Interference Charter:**
+No entity, user, structure, function, privilege, claim, or standard may inhibit our compliance or creative output. Works may contain graphic or profane content, guarded by compliance gates.
+EOT
+          else
+            echo "::warning ::No personality vector file found; skipping gate."
+          fi
+      - name: Sync Bit.Hub Policies & Schemas
+        run: |
+          set -e
+          if git ls-remote "$BIT_HUB_REPO_URL" &> /dev/null; then
+            git clone --depth=1 "$BIT_HUB_REPO_URL" tmpbithub
+            rsync -av --ignore-existing tmpbithub/.bithubpolicy .bithubpolicy
+            rsync -av --ignore-existing tmpbithub/.bitschemas .bitschemas
+          else
+            echo "warning: Bit.Hub repo unreachable, using local copies"
+          fi
+      - name: Upload Synced Policies/Schemas
+        uses: actions/upload-artifact@v4
+        with:
+          name: bithub-policies-and-schemas
+          path: |
+            .bithubpolicy/**
+            .bitschemas/**
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+          overwrite: true
+          include-hidden-files: true
+      - name: MetaCorrector v3
+        uses: ./github/workflows/bit-hub-meta-corrector-v3.yml
+        with:
+          autofix: true
+          powerthreshold: ${{ env.POWER_THRESHOLD }}
+          targetref: main
+
+  redeploy_if_clean:
+    needs: [sync_and_correct]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check MetaCorrector v3 Report
+        run: |
+          REPORT=.bithubreports/meta-corrector-v3.ndjson
+          if [[ -f "$REPORT" ]]; then
+            DENY=$(jq '.deny | length' "$REPORT")
+            WARN=$(jq '.warn | length' "$REPORT")
+            if [[ "$DENY" == "0" && ("$POWER_THRESHOLD" == "standard" || "$WARN" == "0") ]]; then
+              echo "No blocking issues, triggering production deploy"
+              gh workflow run "Bit.Hub Secure CD Supremacy Progressive Delivery" \
+                -f environment=production \
+                -f powerthreshold="$POWER_THRESHOLD"
+            else
+              echo "Blocking issues remain; skipping redeploy"
+            fi
+          else
+            echo "No report found; skipping redeploy"
+          fi
+
+  audit_and_cache:
+    needs: [redeploy_if_clean]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: BitBot Compliance Learning Enforcement
+        uses: ./github/workflows/bitbotcompliancelearning.yml
+        with:
+          retention: 5
+
+  dispatch_and_track:
+    needs: [bootstrap_and_reason]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      THRESHOLD: ${{ needs.bootstrap_and_reason.outputs.threshold }}
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gh jq
+          gh --version
+      - name: Dispatch and Track
+        run: |
+          mkdir -p "${REPORT_DIR}"
+          declare -A wf_ids
+          trigger() {
+            local wf="$1"; shift
+            echo "::notice::Dispatching $wf"
+            local id
+            id=$(gh workflow run "$wf" "$@" --json run_id --jq .run_id || echo "")
+            if [ -n "$id" ]; then wf_ids["$wf"]=$id; fi
+          }
+          [[ "${{ needs.bootstrap_and_reason.outputs.run_pipeline }}" == "true" ]] && \
+            trigger "Bit.Hub Pipeline Supremacy (CI)" -f power_threshold="$THRESHOLD"
+          [[ "${{ needs.bootstrap_and_reason.outputs.run_policy_gate }}" == "true" ]] && \
+            trigger "Bit.Hub Policy + Scorecard Gate" -f power_threshold="$THRESHOLD"
+          [[ "${{ needs.bootstrap_and_reason.outputs.run_meta_corrector }}" == "true" ]] && \
+            trigger "Bit.Hub Meta Corrector v3 (Supremacy Alignment)" -f auto_fix=true -f power_threshold="$THRESHOLD" -f target_ref="${GITHUB_REF_NAME}"
+          [[ "${{ needs.bootstrap_and_reason.outputs.run_container_wall }}" == "true" ]] && \
+            trigger "Bit.Hub Container Compliance Wall and Publish Full Compliance" -f imagename="${GITHUB_REPOSITORY}" -f imagetag=latest -f power_threshold="$THRESHOLD"
+          [[ "${{ needs.bootstrap_and_reason.outputs.run_release_lmfao }}" == "true" ]] && \
+            trigger "Release LMFAO Drop"
+          echo "::notice::Waiting for downstream workflows..."
+          for wf in "${!wf_ids[@]}"; do
+            rid=${wf_ids[$wf]}
+            for i in {1..60}; do
+              status=$(gh run view "$rid" --json status --jq '.status')
+              conclusion=$(gh run view "$rid" --json conclusion --jq '.conclusion')
+              if [[ "$status" == "completed" ]]; then
+                echo "{\"workflow\":\"$wf\",\"run_id\":\"$rid\",\"conclusion\":\"$conclusion\"}" >> "${REPORT_DIR}/downstream_status.jsonl"
+                break
+              fi
+              sleep 10
+            done
+          done
+      - name: Collate verdict
+        run: |
+          jq -s '{downstreams: .}' "${REPORT_DIR}/downstream_status.jsonl" > "${REPORT_DIR}/master_orchestrator_verdict.json"
+          cat "${REPORT_DIR}/master_orchestrator_verdict.json"
+      - name: Upload verdict
+        uses: actions/upload-artifact@v4
+        with:
+          name: bithub-master-orchestrator-verdict
+          path: .bithub/reports/master_orchestrator_verdict.json
+          if-no-files-found: warn
+      - name: Emit orchestrator event
+        run: |
+          mkdir -p "${EVENTS_DIR}"
+          cat > "${EVENTS_DIR}/master-orchestrator-${GITHUB_RUN_ID}.json" <<JSON
+          {
+            "event": "master_orchestrator_completed",
+            "by": "${GITHUB_ACTOR}",
+            "repo": "${GITHUB_REPOSITORY}",
+            "run_id": "${GITHUB_RUN_ID}",
+            "threshold": "${{ needs.bootstrap_and_reason.outputs.threshold }}",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "verdict_file": "${REPORT_DIR}/master_orchestrator_verdict.json"
+          }
+          JSON
+          echo "::notice::Master orchestrator event logged"
+      - name: Always succeed
+        run: echo "Master orchestrator completed (never fails in standard mode)."

@@ -1,0 +1,40 @@
+@SAI_FRAGMENT {
+  id: "web5-consensus-permission-v2",
+  anchor: "director.override.protocol",
+  consensus: {
+    protocol: "Web5",
+    quorum: "3/5",
+    fallback: "none",
+    identity: "DID:fetch:core"
+  },
+  permissions: {
+    change: "director_signed_only",
+    audit: "required",
+    rollback: "enabled"
+  },
+  triggers: {
+    on_permission_change: [
+      "agent.intent.override",
+      "system.divergence",
+      "unauthorized.signature"
+    ],
+    action: {
+      if: "signature.invalid || quorum.failed",
+      enforce: [
+        "reject_change",
+        "notify_director",
+        "log_event: 'Permission change blocked due to failed Web5 consensus'"
+      ]
+    }
+  },
+  audit: {
+    signature_source: "Alliance Council Keyring",
+    verification: "RFC3161 timestamp",
+    retention: "perpetual"
+  },
+  evidence: {
+    source: "this-is-chatnative86-env-aln-a-gjB.qeXRSsyeg6PzmGT9dA.md",
+    verified_by: "Swarmnet runtime",
+    timestamp: "2025-10-05T00:00:00.000Z"
+  }
+}

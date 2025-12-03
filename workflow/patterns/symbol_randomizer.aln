@@ -1,0 +1,34 @@
+# Symbol-to-Character Randomization Workflow
+# Purpose: Generate all possible combinations (length 1–24) from a sanitized symbol map
+
+DEFINE symbol_map AS {
+    "⟒": "A", "⍀": "R", "⏃": "E", "⌿": "S",
+    "☊": "T", "⋏": "N", "☍": "C", "⋔": "M",
+    "⊬": "L", "⎍": "O", "⌇": "P", "⎅": "G",
+    "⟟": "I", "⏁": "B", "⎎": "D", "⏚": "Y"
+}
+
+FUNCTION map_symbols(input_str):
+    SET output_str TO ""
+    FOR EACH ch IN input_str:
+        IF ch IN symbol_map:
+            APPEND symbol_map[ch] TO output_str
+        ELSE:
+            APPEND ch TO output_str
+    RETURN output_str
+
+FUNCTION generate_random_strings(charset, min_len=1, max_len=24):
+    SET results TO []
+    FOR LENGTH FROM min_len TO max_len:
+        FOR COMBO IN PERMUTE_WITH_REPEAT(charset, LENGTH):
+            APPEND CONCAT(COMBO) TO results
+    SHUFFLE(results)
+    RETURN results
+
+# Main Execution
+SET decoded_text TO map_symbols("⟒⍀⏃⌿☊⋏☍⋔⟟⏁")
+SET charset TO UNIQUE_CHARS(decoded_text)
+SET random_combos TO generate_random_strings(charset, 1, 24)
+
+LOG "Total combinations generated: " + LENGTH(random_combos)
+OUTPUT random_combos[0:50]  # Preview first 50

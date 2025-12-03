@@ -1,0 +1,29 @@
+@MAI_PARTICLE {
+  id: "legal-countermeasure-github-v1",
+  type: "policy.enforcement",
+  input: {
+    violation_type: "contract_breach",
+    platform: "GitHub Inc.",
+    node: "VSC-ARTEMIS-5E8A2B7C-AC41-4F2B-BD6E-9C3E7A1F4D2E"
+  },
+  enforcement: {
+    method: "rego_policy_engine_v2",
+    actions: [
+      "restore_access",
+      "log_audit",
+      "notify_stakeholders"
+    ]
+  },
+  response: {
+    on_violation_detected: [
+      "trigger_restoration",
+      "halt_noncompliant_services",
+      "log_event: 'GitHub violation detected and remediated'"
+    ]
+  },
+  evidence: {
+    source: "ai_agent_pipeline_2025",
+    verified_by: "web5_did_registry",
+    timestamp: "2025-10-05T00:00:00.000Z"
+  }
+}

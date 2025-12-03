@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#0a0a0a" stroke="#2cbe4e" stroke-width="6"/>
+
+  <!-- Shield -->
+  <path d="M100 60 L135 85 L125 140 L100 160 L75 140 L65 85 Z" 
+        fill="#2cbe4e" stroke="#ffffff" stroke-width="3"/>
+
+  <!-- Lock -->
+  <rect x="90" y="95" width="20" height="25" rx="5" fill="#ffffff"/>
+  <circle cx="100" cy="108" r="4" fill="#2cbe4e"/>
+  <rect x="96" y="80" width="8" height="18" rx="3" fill="#ffffff"/>
+</svg>

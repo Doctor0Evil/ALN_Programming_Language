@@ -1,0 +1,9 @@
+scope::define("crypto.arguments") {
+    enforce: signed, auditable, rollback;
+    bind: browser.edge.session;
+}
+
+scope::define("callers.edge") {
+    context: _requestMethod, closure;
+    isolation: per-session;
+}

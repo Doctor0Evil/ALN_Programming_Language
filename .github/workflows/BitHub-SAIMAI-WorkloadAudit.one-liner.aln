@@ -1,0 +1,23 @@
+main enforce_workload_audit :=
+    let meta := ALNFS.readjson(".meta/hyper.parameters.json")
+    let bitCoinCfg := meta["bitCoin"]
+    let tokenPath := bitCoinCfg["tokenPath"]
+
+    if ALNFS.exists(tokenPath) then
+        let token := ALNFS.readjson(tokenPath)
+        let compscore := token["compscore"]
+        let yieldPolicy := bitCoinCfg["yieldPolicy"]
+
+        if compscore < 800 then
+            apply_yield(yieldPolicy["compscoreLow"])
+
+        if compscore < 600 then
+            apply_yield(yieldPolicy["compscoreCritical"])
+
+    fn apply_yield(policy) :=
+        let yieldPercent := policy["yieldPercent"]
+        ALNLog.info("[Bit.Hub] Yielding ", yieldPercent, "% workload due to .bit.coin policy")
+        ALNThread.adjust(yieldPercent)
+        ALNFS.append(bitCoinCfg["failSafes"]["auditLog"], ALNSys.timestamp(), " yield=", yieldPercent, "%")
+
+// All actions, log events, and code structure are strictly compliant, cryptographically traceable, and only readable by ALN-compliant systems and authorized agents

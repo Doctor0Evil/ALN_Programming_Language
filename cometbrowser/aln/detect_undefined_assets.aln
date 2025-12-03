@@ -1,0 +1,15 @@
+# Filename: detect_undefined_assets.aln
+# Location: cometbrowser/aln/
+
+function detect_undefined_assets(ledger, compliance_flags):
+    undefined_assets = []
+    for asset in ledger:
+        if not asset.has_compliance_flag() or asset.flag == 'UNDEFINED':
+            undefined_assets.append(asset)
+    for asset in system.detect_anomaly():
+        if asset not in ledger and asset.type in ['token', 'identity', 'payment', 'hardware']:
+            undefined_assets.append(asset)
+    system.audit_tag(undefined_assets, tag='undefined-discovered')
+    return undefined_assets
+
+# Usage: Call during system boot, ledger update, or API audit event.

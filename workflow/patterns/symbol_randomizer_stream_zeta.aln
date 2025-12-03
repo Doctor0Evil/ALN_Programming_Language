@@ -1,0 +1,38 @@
+# Symbol-to-Character Stream Compiler with .zeta Firewall Hashing
+# Secure Workflow: Streams randomized combos (length 1-24) to disk, appends checksums for integrity
+
+DEFINE symbol_map AS {
+    "⟒": "A", "⍀": "R", "⏃": "E", "⌿": "S",
+    "☊": "T", "⋏": "N", "☍": "C", "⋔": "M",
+    "⊬": "L", "⎍": "O", "⌇": "P", "⎅": "G",
+    "⟟": "I", "⏁": "B", "⎎": "D", "⏚": "Y"
+}
+
+FUNCTION map_symbols(input_str):
+    STREAM output TO /data/temp/symbol_map_output.txt
+    FOR EACH ch IN input_str:
+        IF ch IN symbol_map:
+            WRITE symbol_map[ch] TO output
+        ELSE:
+            WRITE ch TO output
+    CLOSE output
+
+FUNCTION generate_random_stream_with_zeta(charset, min_len=1, max_len=24, output_file="/secure_output/symbol_random.log"):
+    OPEN STREAM output_file
+    SET entry_hashes TO []
+    FOR LENGTH FROM min_len TO max_len:
+        FOR COMBO IN PERMUTE_WITH_REPEAT_STREAM(charset, LENGTH):
+            SET entry TO CONCAT(COMBO)
+            SET zeta_hash TO ZETA_HASH(entry)   # Secure hash using .zeta firewall protocol
+            WRITE entry + " | " + zeta_hash TO output_file
+            APPEND zeta_hash TO entry_hashes
+    CLOSE STREAM
+    WRITE "TOTAL ENTRIES: " + LENGTH(entry_hashes) + " | COMBINED HASH: " + ZETA_HASH(CONCAT(entry_hashes)) TO output_file
+    RETURN "Streaming with .zeta hash: Complete"
+
+# Main Sequence
+SET decoded_text TO map_symbols("⟒⍀⏃⌿☊⋏☍⋔⟟⏁⎎⎅")
+SET charset TO UNIQUE_CHARS(decoded_text)
+generate_random_stream_with_zeta(charset, 1, 24, "/secure_output/symbol_random_zeta.log")
+
+LOG "Streamed random combos with .zeta hash validation appended."

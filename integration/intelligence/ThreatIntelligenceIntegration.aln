@@ -1,0 +1,30 @@
+# ALN Threat Intelligence & Cross-System Coordination Interface
+
+AGENT ThreatIntelligenceIntegration
+    # External Threat Feed API Connectors (abstract example)
+    WHEN [TIMER 5min]
+        FETCH ThreatFeed FROM "https://threatfeed.example/api/recent"
+        IF (ThreatFeed.Status == SUCCESS)
+            THEN [UpdateThreatPatterns(ThreatFeed.Data)]
+    END
+
+    DEFINE UpdateThreatPatterns(FEEDDATA)
+        FOR EACH threat IN FEEDDATA.Threats
+            AddOrUpdateThreatPattern(threat.Name, threat.Signatures)
+        END
+    END
+
+    DEFINE AddOrUpdateThreatPattern(NAME, SIGNATURES)
+        IF (NAME IN AdvancedThreatDetection.ThreatPatterns)
+            THEN [AdvancedThreatDetection.ThreatPatterns[NAME] = SIGNATURES]
+        ELSE
+            AdvancedThreatDetection.ThreatPatterns[NAME] = SIGNATURES
+        END
+    END
+
+    # Cross-System Sharing (abstract sync example)
+    WHEN [SecurityIncident(IncidentType, Data)]
+        SEND IncidentReport TO "central.securityhub.local"
+        LOG ("Incident shared with security hub: " + IncidentType + ";" + Data)
+    END
+END

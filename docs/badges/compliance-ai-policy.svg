@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="28">
+  <linearGradient id="a" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <rect rx="3" width="220" height="28" fill="#555"/>
+  <rect rx="3" x="135" width="85" height="28" fill="#d73a49"/>
+  <path fill="#d73a49" d="M135 0h4v28h-4z"/>
+  <rect rx="3" width="220" height="28" fill="url(#a)"/>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="12">
+    <text x="70" y="18">AI Systems</text>
+    <text x="176" y="18">Policy-Bound</text>
+  </g>
+</svg>

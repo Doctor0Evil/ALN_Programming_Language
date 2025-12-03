@@ -1,0 +1,70 @@
+# ALN Universal Security Agent: Core Security Framework
+
+AGENT UniversalSecurityAgent
+    WHEN [RECEIVE Event]
+        IF [Sanitize(Event.Data) == SAFE]
+            THEN [ForwardToHandler(Event)]
+        ELSE [LogSecurityIncident("Rejected unsafe input event", Event.Data)
+              RejectEvent("Input failed sanitation/security checks")]
+    END
+
+    DEFINE Sanitize(INPUT)
+        IF (INPUT CONTAINS "<script>" OR INPUT MATCHES "rm -rf" OR INPUT MATCHES "DROP TABLE"
+            OR INPUT CONTAINS "system(" OR INPUT CONTAINS "curl http" OR INPUT CONTAINS "eval(")
+            THEN RETURN UNSAFE
+        ELSE IF (INPUT IN AllowedActions)
+            THEN RETURN SAFE
+        ELSE RETURN UNSAFE
+        END
+    END
+
+    WHEN [RECEIVE AuthRequest]
+        IF [ValidateAuth(AuthRequest.User, AuthRequest.Credential) == TRUE]
+            THEN [GrantAccess(AuthRequest.User)]
+        ELSE [DenyAccess(AuthRequest.User, "Authentication failed")]
+    END
+
+    DEFINE ValidateAuth(USER, CRED)
+        IF (USER IN ApprovedUsers AND CredentialValid(CRED))
+            THEN RETURN TRUE
+        ELSE RETURN FALSE
+        END
+    END
+
+    TIMER 10s
+        ScanRecentActivity()
+        IF [DetectAnomaly(ActivityLog, 10s) == TRUE]
+            THEN [AlertAdmin("Anomaly detected in activity log")]
+    END
+
+    DEFINE DetectAnomaly(LOG, WINDOW)
+        IF (LOG.CountEvents(WINDOW) > MaxEventsLimit
+            OR LOG.ContainsPattern("RepeatedFailure", WINDOW))
+            THEN RETURN TRUE
+        ELSE RETURN FALSE
+        END
+    END
+
+    EVENT [SecurityIncident(IncidentType, Data)]
+        LogSecurityIncident(IncidentType, Data)
+        IF (IncidentType == "Critical")
+            THEN [TriggerIncidentResponse(IncidentType, Data)]
+    END
+
+    DEFINE LogSecurityIncident(TYPE, DATA)
+        LOG ("[SECURITY_AGENT] IncidentType: " + TYPE + "; Data: " + DATA)
+    END
+
+    DEFINE TriggerIncidentResponse(TYPE, DATA)
+        IF (TYPE == "Critical")
+            THEN [RollbackSystemState()
+                  DisableCompromisedComponents()
+                  AlertAdmin("Critical security event: " + DATA)]
+        ELSE [AlertAdmin("Security alert: " + DATA)]
+        END
+    END
+
+    DATA AllowedActions = {"read", "write", "view", "create", "update"}
+    DATA ApprovedUsers = {"admin", "system", "trusted_user"}
+    DATA MaxEventsLimit = 100
+END

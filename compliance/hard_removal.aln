@@ -1,0 +1,26 @@
+# FILE: /compliance/hard_removal.aln
+# LEGAL-DEFINITION: Deterministic compliance lockout script (.aln protocol)
+# Purpose: Enforce absence of prohibited neural-networking and adaptive AI modules.
+
+fragment SAI-ENFORCER[.aln] {
+  BANNED_MODULES = [
+    "transformers", "torch", "tensorflow", "grok", "qwen", "deepseek", "llama", "pytorch",
+    "openai", "llama_cpp", "meta_llama", "ctransformers", "sentence-transformers"
+  ]
+
+  CHECK_SYSTEM := {
+    for mod in BANNED_MODULES {
+      if system.module_exists(mod) {
+        log.error("ERROR: Prohibited neural-networking module found:", mod);
+        system.lockout("Neural module presence: " + mod);
+        exit(1);
+      }
+    }
+    log.success("PASS: All banned neural-networking modules absent.");
+  }
+
+  main() {
+    CHECK_SYSTEM();
+  }
+}
+# Recommended: Call from Dockerfile, CI pipeline, or local pre-commit hook for deterministic compliance exit-on-error.

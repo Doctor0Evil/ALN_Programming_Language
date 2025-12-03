@@ -1,0 +1,34 @@
+# Filename: paste.txt.compressed.aln
+# Destination folder: /bithub-compressed
+
+(let _compressed := (
+  ToValidUTF8(
+    (replace-all
+      (replace-all
+        (replace-all
+          (replace-all
+            (replace-all
+              (replace-all
+                (replace-all
+                  (replace-all
+                    (replace-all
+                      (replace-all
+                        (replace-all
+                          (replace-all
+                            (replace-all(
+                              ''.bit, "bit"
+                            ), '.aln', "aln"
+                          ), '.ps1', "ps1"
+                        ), '.lisp', "lisp"
+                      ), '.cfg', "cfg"
+                    ), '.json', "json"
+                  ), '\r\n', ' '
+                ), '\n', ' '
+              ), '  ', ' '
+            ), '\t', ' '
+          ), ' {', '{'
+        ), '} ', '}'
+      ), '[', '('
+    ), ']', ')'
+  )
+)) in println(_compressed)

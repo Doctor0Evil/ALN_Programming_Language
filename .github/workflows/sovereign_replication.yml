@@ -1,0 +1,38 @@
+name: Sovereign Replication Enforcement
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [orchestrator-replication]
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+jobs:
+  sovereign-replication:
+    runs-on: [self-hosted, linux, trusted-runner]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure protocol file exists
+        run: |
+          mkdir -p .governance/protocols
+          if [ ! -f ".governance/protocols/sovereign_replication_hardened.jsf" ] \
+             && [ ! -f ".governance/protocols/sovereign_replication.aln" ]; then
+            echo "ERROR: No governance protocol file found."
+            exit 1
+          fi
+
+      - name: Run compliance executor (dual defense)
+        run: |
+          if [ -f ".governance/protocols/sovereign_replication_hardened.jsf" ]; then
+            tools/jsf-exec .governance/protocols/sovereign_replication_hardened.jsf
+          else
+            tools/jsf-exec .governance/protocols/sovereign_replication.aln
+          fi

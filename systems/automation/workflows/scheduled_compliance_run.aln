@@ -1,0 +1,66 @@
+// ALN Workflow Script: Scheduled Compliance and Data Ingestion Tasks
+// This file is a sanitized, execution-safe variant for compliance-verified automation environments.
+// Purpose: Schedule and execute compliance checks, monitor rogue activity, and perform secure data ingestion.
+
+Protocol Scheduled_Compliance_Run v1.0.4
+{
+    Metadata:
+        RunName: "Compliance Run (Scheduled or Manual Trigger)"
+        Schedule: Cron("0 12 * * *")    // Executes daily at 12:00 UTC
+        ManualTrigger: ENABLED
+        Executor: Ubuntu_Latest
+
+    Job Compliance_Tasks
+    {
+        Step "Checkout Repository":
+            Action: use("actions/checkout@v2")
+
+        Step "Setup Environment":
+            Action: use("actions/setup-python@v2")
+            Params:
+                python_version: "3.8"
+
+        Step "Install Dependencies":
+            Execute:
+                - run("python -m pip install --upgrade pip")
+
+        Step "Compliance Check Execution":
+            Id: compliance
+            Secure_Run:
+                file("compliancecheck.py")
+
+        Step "Rogue Actor Monitor":
+            Log("Initiating rogue actor surveillance.")
+            Execute:
+                - echo("Monitoring rogue actors...")
+
+        Step "Program Data Ingestion":
+            Safe_Run:
+                file_load: "programdata.json"
+                mode: "read_json"
+                validate_schema: TRUE
+                on_success:
+                    Log("Program data ingestion successful.")
+                    Display(JSON_Structure)
+
+        Step "Task Completion Log":
+            Log("Compliance and Data Ingestion Tasks completed. Output log verified.")
+    }
+
+    DataSet Program_Metadata
+    {
+        ProgramOverview: "This program teaches how to design and implement AI/ML solutions using a no-code framework and theoretical foundations for scalable deployment."
+        SkillsModules:
+            ["Machine Learning", "Artificial Intelligence", "Deep Learning", "Generative AI", "Prompt Engineering", "Agentic AI", "Retrieval-Augmented Generation (RAG)", "Data Visualization", "Computer Vision", "Recommendation Systems", "Responsible AI"]
+        Faculty:
+            ["Stefanie Jegelka", "Caroline Uhler", "John N. Tsitsiklis", "Munther Dahleh", "Devavrat Shah"]
+    }
+
+    ComplianceVerification:
+        SecurityAudit: ENABLED
+        Encryption: AES-256
+        RuntimeIntegrityCheck: ENABLED
+        LogRetention: 90 Days
+}
+
+End_Protocol

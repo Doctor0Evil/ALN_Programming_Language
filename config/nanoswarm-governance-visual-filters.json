@@ -1,0 +1,59 @@
+{
+  "governanceVisualFilter": {
+    "version": "1.1.0",
+    "description": "Access control overlay for developer console telemetry mirroring.",
+    "policyEngine": {
+      "enforcement": "runtime",
+      "verificationSource": "localHSM",
+      "audit": true
+    },
+    "roles": {
+      "Developer": {
+        "clearanceLevel": 1,
+        "visibleFields": [
+          "nanoswarmIntegrityScore",
+          "attestationCycleTimestamps",
+          "auditLedgerSealCountdown"
+        ]
+      },
+      "SecuritySteward": {
+        "clearanceLevel": 2,
+        "visibleFields": [
+          "nanoswarmIntegrityScore",
+          "watchdogDivergenceAlerts",
+          "activeContainmentStates",
+          "rollbackReadiness",
+          "auditLedgerSealCountdown"
+        ]
+      },
+      "ComplianceOfficer": {
+        "clearanceLevel": 3,
+        "visibleFields": [
+          "nanoswarmIntegrityScore",
+          "activeContainmentStates",
+          "rollbackReadiness",
+          "attestationCycleTimestamps",
+          "watchdogDivergenceAlerts",
+          "auditLedgerSealCountdown"
+        ]
+      },
+      "LegalCustodian": {
+        "clearanceLevel": 4,
+        "visibleFields": "*"
+      }
+    },
+    "securityEnforcement": {
+      "authMethod": "device-bound certificate chain",
+      "tamperDetection": "entropy drift + signed HSM verification",
+      "onUnauthorizedAccess": {
+        "action": "telemetry blackout",
+        "logEvent": true,
+        "alertQuorum": true
+      },
+      "logging": {
+        "hashSeal": true,
+        "ledgerEntry": true
+      }
+    }
+  }
+}

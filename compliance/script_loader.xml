@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptLoader>
+    <Module name="TransparentTrustCenter" location="/compliance/transparent_trust_center.aln" />
+    <Dashboard name="TrustDashboard" location="/compliance/trust_dashboard.html" />
+</ScriptLoader>

@@ -1,0 +1,44 @@
+aln
+Filename: fragments/copy_protection_safeguard.SAI
+
+fragment copy_protection_safeguard
+
+description """
+Enforces immutable copy-protection and intellectual property safeguarding in cyb.ai superintelligence environments.
+This fragment applies quantum-safe enforcement on code execution, binding, and distribution through nanoswarm governance.
+It integrates cryptographic anti-tamper mechanisms, signature verification, and rollback safeguards.
+Designed to secure proprietary assets within chained AI workflows under Director oversight.
+"""
+
+instructions {
+   requirealways("Copy-protection transformations must be Director-authorized.");
+   enforce("Immutable code checksum verification of material before execution.");
+   bind("Attach cryptographic digital rights management info to all AI code artifacts.");
+   verify("Validate cryptographic signatures via quantum-safe lattice signatures.");
+   restrict("Disallow unauthorized cloning, export, or execution of protected materials.");
+   auditlog("Log all access, attempts, and transformations in immutable ledger: logs/copy_protect_audit.log");
+   rollback("Trigger automatic rollback upon detection of unauthorized modification or signature failure.");
+   monitor("Continuously monitor environments using nanoswarm checkpoints and Director signaling.");
+}
+
+guards {
+   quantum_safeguard: enabled,
+   signature_verification: enforced,
+   immutable_registry: active,
+   runtime_integrity: monitored,
+   director_approval: mandatory
+}
+
+usage_notes """
+Place this fragment in the 'fragments' directory of your cyb.ai governance repo.
+This safeguard works in tandem with chmod-9000.SAI and alignment response fragments.
+Bind it to all proprietary AI code, intellectual property keys, and digital content registration workflows.
+Auditing and rollback capabilities ensure continuous protection and immediate remediation.
+"""
+
+release_policy """
+Immutable fragment. Modification only permitted through Director multisignature authorization.
+Strict compliance enforced with all cyber-governance protocols and nanoswarm consensus mechanisms.
+"""
+
+endfragment

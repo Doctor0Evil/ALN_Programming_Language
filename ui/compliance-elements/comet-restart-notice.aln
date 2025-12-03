@@ -1,0 +1,62 @@
+element Comet.RestartNotice {
+  metadata {
+    id: "comet-restart-notice"
+    compliance: "enterprise-grade v1.2"
+    audited: true
+    licensing: "Alliance-compliant"
+    disclosure_layer: "full"
+    version: "2025.09.18"
+  }
+
+  structure {
+    class: "flex restart-notice"
+    message: "Your changes will take effect the next time you relaunch Comet."
+  }
+
+  compliance_validation {
+    disclosure_format: csv
+    disclosure_record [
+      {property: "class", value: "flex restart-notice", compliance_status: "valid", comments: "UI rendering and structural conformity"},
+      {property: "innerText", value: "Your changes will take effect the next time you relaunch Comet.", compliance_status: "valid", comments: "User instruction rendered per accessibility rules"},
+      {property: "baseURI", value: "chromeflags", compliance_status: "n/a", comments: "Environment base identifier"},
+      {property: "auditTrail", value: "true", compliance_status: "valid", comments: "Element linked to immutable audit trails"},
+      {property: "modification_warning", value: "Displayed on config/edit action", compliance_status: "valid", comments: "Required legal UX alert"},
+      {property: "licensing", value: "Alliance-compliant", compliance_status: "valid", comments: "Cross-environment legal certification"},
+      {property: "version", value: "2025.09.18", compliance_status: "valid", comments: "Version attestation for ALN policy revision"}
+    ]
+  }
+
+  meta_diagnostics {
+    category: "UI, Notification"
+    compatible_browsers: ["Comet", "ALN"]
+    function: "Persistent compliance notification; user confirmation before config commit"
+    diagnostics: "Forensic audit trail event logged on invocation"
+    session_id: "VSC-ARTEMIS-5E8A2B7C-AC41-4F2B-BD6E-9C3E7A1F4D2E"
+    encoding: "utf-8"
+    compatibility: ["windows13", "VR/AR", "ALNF", "Sinn.e-MAXX"]
+    sandboxed: true
+  }
+
+  compliance_framework_reference {
+    rule_base: ["ITSG-33", "Oracle EM Compliance XML", "W3C XML Signature Security Standard"]
+    test_suite: ["XACML Validation", "XML Encryption & Signature", "Audit Event Replay"]
+    integrity_controls: {
+      xml_signing: true
+      checksum_validation: "SHA512"
+      entity_protection: "strict"
+    }
+    xml_namespace: "http://alliance.aln/xml/compliance/v1"
+  }
+
+  lifecycle {
+    event: {
+      trigger: "config edit or system preference update"
+      result: "Render notification, enforce delayed application until safe restart"
+      audit_log: true
+    }
+    archival_policy: {
+      retention_days: 730
+      storage: "Alliance.Audit"
+    }
+  }
+}

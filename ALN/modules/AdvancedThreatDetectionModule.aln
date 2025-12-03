@@ -1,0 +1,75 @@
+# ALN Advanced Threat Detection Module
+
+AGENT AdvancedThreatDetection
+    DATA ThreatPatterns = {
+        "SQL Injection": {"SELECT * FROM", "DROP TABLE", "--", "' OR '1'='1"},
+        "XSS": {"<script>", "onerror=", "javascript:"},
+        "Command Injection": {"; rm -rf", "|", "cat /etc/passwd", "wget "},
+        "Remote Access": {"curl http", "nc -lvp", "ssh "}
+    }
+
+    DATA BehaviorPatterns = {
+        "BruteForce": {"RepeatedFailure", "MultipleAuthErrors", "FrequentLoginAttempts"},
+        "Enumeration": {"DirectoryListing", "FileReadAttempt", "TableStructureDiscovery"},
+        "PrivilegeEscalation": {"UnauthorizedAccessAttempt", "RoleChangeRequest"}
+    }
+
+    DATA AnomalyThresholds = {
+        "RapidEvent": 20,
+        "UnusualTime": {"00:00-06:00"},
+        "DataVolume": 10240
+    }
+
+    WHEN [RECEIVE Event]
+        IF [DetectThreatSignature(Event.Data) == TRUE]
+            THEN [RaiseThreatAlert("Threat Pattern Match", Event)]
+        ELSE IF [DetectAnomalousBehavior(Event.User, Event.Type) == TRUE]
+            THEN [RaiseBehaviorAlert("Suspicious User Behavior", Event)]
+        ELSE IF [DetectContextAnomaly(Event.Context) == TRUE]
+            THEN [RaiseAnomalyAlert("Contextual Anomaly", Event)]
+        END
+    END
+
+    DEFINE DetectThreatSignature(DATA)
+        FOR EACH threat IN ThreatPatterns
+            FOR EACH pattern IN ThreatPatterns[threat]
+                IF (DATA CONTAINS pattern)
+                    LOG ("Threat detected: " + threat + "; Pattern: " + pattern)
+                    RETURN TRUE
+                END
+            END
+        END
+        RETURN FALSE
+    END
+
+    DEFINE DetectAnomalousBehavior(USER, TYPE)
+        IF (ActivityLog.CountRecentEvents(USER, TYPE, 10min) > AnomalyThresholds["RapidEvent"])
+            RETURN TRUE
+        IF (ActivityLog.DetectBehaviorPattern(USER, BehaviorPatterns))
+            RETURN TRUE
+        RETURN FALSE
+    END
+
+    DEFINE DetectContextAnomaly(CONTEXT)
+        IF (CONTEXT.Time IN AnomalyThresholds["UnusualTime"])
+            RETURN TRUE
+        IF (CONTEXT.DataTransferred > AnomalyThresholds["DataVolume"])
+            RETURN TRUE
+        RETURN FALSE
+    END
+
+    DEFINE RaiseThreatAlert(REASON, EVENT)
+        LOG ("[THREAT ALERT] Reason: " + REASON + "; Data: " + EVENT.Data)
+        TriggerIncidentResponse("Critical", EVENT)
+    END
+
+    DEFINE RaiseBehaviorAlert(REASON, EVENT)
+        LOG ("[BEHAVIOR ALERT] Reason: " + REASON + "; User: " + EVENT.User)
+        AlertAdmin(REASON + " for User: " + EVENT.User)
+    END
+
+    DEFINE RaiseAnomalyAlert(REASON, EVENT)
+        LOG ("[ANOMALY ALERT] Reason: " + REASON + "; Context: " + EVENT.Context)
+        AlertAdmin(REASON + " at " + EVENT.Context.Time)
+    END
+END

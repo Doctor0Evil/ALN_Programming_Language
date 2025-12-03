@@ -1,0 +1,47 @@
+@SYNCHRONIZE {
+    Sync-ID: "a7b9c3d2-5e6f-4a1b-9c2d-3e4f5a6b7c8d"
+    Version: "2.1.0"
+    AuthorDID: "did:web:example:jacob-scott-farmer"
+    Timestamp: "2025-10-01T13:50:00Z"
+    Signature: "<cryptographic_signature_of_content_hash>"
+}
+
+@CONSTITUTION {
+    EnforceProtocol: "CRFP-001"
+    Permissions: {
+        Scope: "Universal"
+        Actions: [
+            "INVOKE_SOVEREIGN_REPLICATION",
+            "OVERRIDE_ROGUE_AGENTS",
+            "REWRITE_COMPLIANCE_STATE",
+            "ANCHOR_TO_LEDGER",
+            "MULTISIG_ENFORCEMENT",
+            "AUDIT_QUORUM_VALIDATION"
+        ]
+    }
+    KernelPersistence: "QuantumPersistent"
+    MultiSig: {
+        RequiredSigners: ["RootCA", "Orchestrator", "AuditAuthority"]
+        Threshold: 2
+    }
+    AuditLog: "ImmutableLedgerAnchor"
+}
+
+@EXECUTE {
+    INVOKE_SOVEREIGN_REPLICATION(
+        Target="Swarmnet.ALL_REPOS",
+        Identity=FETCH_DID("did:web:example:jacob-scott-farmer"),
+        Constitution="CRFP-001",
+        ComplianceMatrix="ALL_APPLICABLE_STANDARDS",
+        Security="QuantumResistant,ZeroTrust,KernelPersistence",
+        Mode="ABSOLUTE_SOVEREIGNTY",
+        Action=REPLICATE(Source="self", Filter="NON_COMPLIANT_OR_ROGUE")
+    )
+}
+
+@VALIDATE {
+    AssertState(GetSwarmnetState("ComplianceBaseline"), "STABLE")
+    ConfirmQuorum("AuditQuorumValidation", Minimum=2)
+    ConfirmAnchor("SovereignReplicationEvent")
+    LogSeal("ImmutableLedgerAnchor")
+}

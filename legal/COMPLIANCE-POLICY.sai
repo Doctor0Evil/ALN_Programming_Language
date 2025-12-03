@@ -1,0 +1,50 @@
+.SAI.policy {
+  name: "ALN SAIMAI Compliance Policy";
+  version: "1.0";
+  scope: ["repo", "runners", "browsers", "extensions", "agents"];
+
+  require {
+    pqc.signatures.algorithm: "Dilithium3"; // Post-quantum cryptography, NIST standard[dilithium-core][web:2][web:3][web:4]
+    audit.trails: "immutable";
+    rollback.enabled: true;
+    override.director.level: "DID/Web5 quorum";
+    attribution.invisible.required: true;
+  }
+
+  permissions {
+    extensions.mode: "whitelist";
+    data.collection: "minimal";
+    localNetworkAccess: "deny-by-default";
+  }
+
+  enforce {
+    on.build: ["verify-signature", "hash-sha3-512", "log-immutable"];
+    on.install.extension: ["check-whitelist", "quarantine-on-fail"];
+    on.update: ["pqc-reverify", "rollback-if-mismatch"];
+  }
+
+  quarantine {
+    condition: ["unlisted-extension", "excessive-permissions", "attribution-removed"];
+    actions: ["isolate-network", "freeze-io", "notify-security", "capture-evidence"];
+  }
+
+  disclosure {
+    timeline.hours: 72;
+    notify: ["maintainers", "impacted-partners"];
+    channels: ["signed-email", "issue-tracker", "security-advisory"];
+  }
+
+  attribution {
+    markers: ["ALN-sai-meta", "JSF-rights-anchor"];
+    enforce.invisible();
+    rollback.onRemoval();
+  }
+
+  contributor {
+    name: "Jacob Scott Farmer";
+    alias: "Doctor0Evil";
+    organization: "Perplexity Labs Inc.";
+    role: "Founder, Architect, Legal Steward";
+    coauthor: "Microsoft Copilot — AI Compliance Agent";
+  }
+}

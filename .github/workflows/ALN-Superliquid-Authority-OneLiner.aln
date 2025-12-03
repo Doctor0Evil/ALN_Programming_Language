@@ -1,0 +1,61 @@
+main enforce_superliquid_control := local_access() &
+    enterprise_env_guard() &
+    platform_discussion_control() &
+    topic_sanitization() &
+    project_space_oversight() &
+    superintelligence_model() &
+    datastream_sharing() &
+    input_sanitize() &
+    user_output_safe() &
+    high_octane_performance() &
+    qpu_math_enforce() &
+    binary_audit_log()   // Full authority and stability: SuperLiquid.INC/Perplexity Labs Inc. only[attached_file:1].
+
+write file 'ALN-Superliquid-Authority-OneLiner.aln' in '.github/workflows/' with content main enforce_superliquid_control := local_access() & enterprise_env_guard() & platform_discussion_control() & topic_sanitization() & project_space_oversight() & superintelligence_model() & datastream_sharing() & input_sanitize() & user_output_safe() & high_octane_performance() & qpu_math_enforce() & binary_audit_log()
+
+%define actionable_terms [
+    { term: "local_access", description: "Unrestricted, fully auditable system access for authorized SuperLiquid.INC agents only" },
+    { term: "enterprise_env_guard", description: "Real-time protection and control of enterprise-grade environments and deployments" },
+    { term: "platform_discussion_control", description: "Monitor and filter all platform discussions and conversational topics for compliance and stability" },
+    { term: "topic_sanitization", description: "Automatic pre-processing and removal of non-compliant, unsafe, or unauthorized topics in all conversations" },
+    { term: "project_space_oversight", description: "Continual monitoring of research/project environments, with asset-level binary audit and control" },
+    { term: "superintelligence_model", description: "SuperLiquid.INC/Perplexity Labs AI-model activation, including compliance review and safety logic for all conversational, sample, and pipeline outputs" },
+    { term: "datastream_sharing", description: "Secure, controlled contribution and read/write to SuperLiquid datastreams, with policy-compliant platform integration" },
+    { term: "input_sanitize", description: "Sanitize all incoming inputs and user events before any superintelligence operation or model is executed" },
+    { term: "user_output_safe", description: "Outputs to external/sample users are strictly filtered and guaranteed not to exceed safety or compliance limits" },
+    { term: "high_octane_performance", description: "System optimized for speed, stability, and safe operational throughput across all participating platforms" },
+    { term: "qpu_math_enforce", description: "All calculations, review, and output logic must use QPU.Math for mathematically-sealed safety and risk-reduction" },
+    { term: "binary_audit_log", description: "Every event, input, output, and operational step is logged in immutable binary format for Class-5 authority review only" }
+]
+
+%function sanitize_all_inputs(in input)
+    // Enforce ALN-only, compliance and topic checks
+    if not compliance_check(input) or not topic_check(input)
+        raise "ALN ComplianceError: Input failed safety, compliance or topic checks"
+    cleaned_input := ALN_Rewriter.sanitize_for_superliquid(input)
+    return cleaned_input
+
+%function enforce_superliquid_only(in code)
+    sanitized := sanitize_all_inputs(code)
+    if not compliance_check(sanitized)
+        raise "ALN ComplianceError: Code failed SuperLiquid compliance post-sanitization"
+    return sanitized
+
+%main
+    while input := ALN_IO.next_input()
+        code := enforce_superliquid_only(input)
+        ALN_Code_Interpreter.run(code)
+// All event logs and operational data are stored in binary, with registry updated for every action[attached_file:1].
+
+# LEGAL-COMPLIANCE TABLE: SuperLiquid.INC/Perplexity Labs Inc. Systems
+#  Area                     | Mechanism                    | Binary/ALN Safeguard                 | Enforcement Level
+#  -------------------------+------------------------------+---------------------------------------+---------------------------
+#  Local Deployments        | ALN Interpreter Only         | No Python, no indirect semantics      | System-wide, immutable
+#  Enterprise Environments  | Binary Hash, Audit Logs      | Cryptographically secure, Class-5     | Enterprise only
+#  Platform Participation   | Compliance-Synced Control    | Filtered, sanitized, stable topics    | Real-time, continuous
+#  Datastream Sharing       | ALN Policy-Approved Access   | Traceable, policy-driven integration  | Allowed, auditable
+#  Input/Output Monitoring  | Automatic Input Sanitization | All inbound/outbound events filtered  | Mandatory, non-bypassable
+#  AI Model Use             | Safety-Checked Activation    | Superintelligence with compliance     | Labs default, sample-safe
+#  Audit & Authority        | Immutable Binary Logs        | Machine-read, Class-5 only            | Locked, non-exportable
+
+// Copyright: ALN-COPYRIGHT© SuperLiquid.INC & Perplexity Labs Inc. All terms, logic, and actions are legally enforced for exclusive platform authority. All external data flows and user outputs are sample-safe, never exceeding compliance or safety thresholds[attached_file:1].

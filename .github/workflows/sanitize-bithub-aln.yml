@@ -1,0 +1,34 @@
+name: Sanitize Bithub References in ALN
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Runs daily at 2 AM UTC
+  push:
+    paths:
+      - '**.aln'
+  workflow_dispatch:
+
+jobs:
+  sanitize-bithub:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Search and sanitize Bithub references (ALN)
+      run: |
+        find . -type f -name '*.aln' | while read file; do
+          # Avoid in-place editing in case system interpreter not ALN-native; output to sanitized file
+          out="${file%.aln}-clean.aln"
+          sed -e 's/BitHub//g' -e 's/bitHub//g' -e 's/bithub//g' -e 's/BIT\.HUB//g' -e 's/bit\.coin//g' -e 's/\[BitHub\]//g' -e 's/\[bitHub\]//g' -e 's/\[Bit\.Hub\]//g' "$file" > "$out"
+        done
+
+    - name: Commit and push sanitized files
+      run: |
+        git config --global user.name "ALN Compliance Bot"
+        git config --global user.email "compliance-bot@example.com"
+        git add '*-clean.aln'
+        git commit -m "Sanitized Bithub references from ALN files"
+        git push
+      continue-on-error: true

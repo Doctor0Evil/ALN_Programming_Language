@@ -1,0 +1,216 @@
+// ALN-Superintelligence-Programming
+// Sanitized and finalized version: immutable, lawful, and sandbox-compliant security detection & containment code
+
+.identity {
+  did: "did:web:your-domain.example/ai/guardian";
+  keys {
+    verify_primary: "ed25519:KEY_PRIMARY_VERIFICATION";
+    sign_primary:   "ed25519:KEY_PRIMARY_SIGNING";
+    attest_runtime: "ed25519:KEY_ATTESTATION";
+  }
+  trust_roots [
+    "urn:policy:constitution.ethics.human_rights.v1",
+    "urn:policy:security.zero_trust.v1",
+    "urn:policy:data_minimization.v1",
+    "urn:policy:compliance.audit_immutability.v1"
+  ]
+}
+
+.audit.kernel {
+  ledger: "local.append_only.blake3";
+  retention.horizon: "P5Y";
+  redact.strategy: "none";
+  seal {
+    cadence: "PT10M";
+    algorithm: "blake3_merkle";
+    anchor: "airgap-anchor.vault.slot/QUARTERLY";
+  }
+  event.schema "ThreatEvent.v1" {
+    fields [
+      "id","ts","source","scope","signal_type","confidence","hash",
+      "evidence_ref","containment_action","rollback_ref","policy_ref"
+    ]
+  }
+}
+
+.policy {
+  invariants [
+    "no_sudo_or_priv_escalation",
+    "no_remote_control_or_exfiltration",
+    "sandbox_only_non_destructive_scans",
+    "rollback_available_for_all_actions",
+    "user_rights_and_notice_respected",
+    "least_privilege_runtime",
+    "no_external_communications_during_scan",
+    "evidence_is_hashed_and_locally_encrypted",
+    "multi-party_approval_required_for_dangerous_ops"
+  ]
+  approvals {
+    quorum: 2;
+    approvers ["role:SecuritySteward","role:ComplianceOfficer","role:LegalCustodian"];
+  }
+}
+
+.runtime.sandbox "scanbox" {
+  os.profile: "lockeddown.minimal";
+  net.access: "none";
+  fs.access {
+    mode: "read_only";
+    allow_paths ["/var/ai-chat/runtime/","/etc/ai-chat/","/opt/agents/","/usr/local/ai/policies/","/tmp/ai_sandbox_in/"];
+  }
+  memory.scrub: "post_task_full";
+  attestation.required: true;
+  attest.verify.key: "@identity.keys.attest_runtime";
+}
+
+.intel.local {
+  rulepacks [
+    "rulepack.spyware.low_profile.v1",
+    "rulepack.malware.file_artifacts.v2",
+    "rulepack.covert_channels.v1",
+    "rulepack.process_anomalies.v2",
+    "rulepack.persistence_hooks.v1",
+    "rulepack.injection_attempts.chat_layer.v1",
+    "rulepack.ghost_agents.identity_mismatch.v1"
+  ]
+  verification {
+    sigs ["ed25519:INTEL_RULEPACK_SIGN_A","ed25519:INTEL_RULEPACK_SIGN_B"];
+    digest: "blake3";
+  }
+}
+
+.vault.evidence {
+  store: "/var/ai-chat/evidence/";
+  encrypt.keyref: "vault.kms.local.SEAL_A";
+  index.digest: "blake3";
+  stamp {
+    include ["file_hashes","process_maps","runtime_configs","policy_versions","scan_results"];
+  }
+}
+
+.detect {
+  signal "covert_process" {
+    scope: "process";
+    match {
+      unsigned.binary == true;
+      parent_chain.incongruent == true;
+      thread.hidden_flag == true;
+      io.pattern == "low-and-slow";
+    }
+    confidence.weighting: 0.75;
+  }
+
+  signal "persistence_hook" {
+    scope: "filesystem";
+    match {
+      path in ["/etc/ld.so.preload","/usr/lib*/inject/*","/opt/agents/.shadow/*"];
+      content.sig == "unknown";
+      mtime.delta < "PT5M";
+    }
+    confidence.weighting: 0.85;
+  }
+
+  signal "chat_layer_injection" {
+    scope: "ai-chat";
+    match {
+      hook.into == "message_router";
+      origin.did != "@identity.did";
+      policy.bypass == true;
+    }
+    confidence.weighting: 0.90;
+  }
+
+  signal "covert_channel" {
+    scope: "runtime";
+    match {
+      timing.jitter.pattern == "steganographic";
+      resource.use == "non-attributable";
+      log.absence == true;
+    }
+    confidence.weighting: 0.70;
+  }
+
+  signal "ghost_agent" {
+    scope: "agent_registry";
+    match {
+      agent.id not_in registry.verified;
+      agent.keys == "derived_from_unknown_root";
+      agent.behavior == "observer_only";
+    }
+    confidence.weighting: 0.80;
+  }
+}
+
+.flow "secure_scan" {
+  inputs {
+    target.scopes ["process","filesystem","ai-chat","runtime","agent_registry"];
+    scan.intent: "non_destructive";
+  }
+  steps [
+    { name: "attest_runtime", run: attest.verify("@runtime.sandbox.scanbox"); },
+    { name: "load_rulepacks", run: intel.load("@intel.local.rulepacks"); },
+    { name: "enumerate_targets", run: scan.enumerate(inputs.target.scopes); },
+    { name: "apply_signals", run: detect.apply_all(); },
+    { name: "record_evidence", run: vault.capture("scan-results"); },
+    { name: "score_findings", run: risk.score(confidence.blend("blake3")); },
+    { name: "decide_containment", run: policy.evaluate("@policy","risk.out"); },
+    { name: "emit_audit", run: audit.log("ThreatEvent.v1","containment.decisions"); }
+  ]
+  guarantees ["no_external_comm","no_priv_escalation","rollback_ready"];
+}
+
+.contain {
+  action "quarantine_file" {
+    require.approvals: "@policy.approvals.quorum";
+    run { move.to: "/var/ai-chat/quarantine/"; set.immutable_tag: true; record.hash: "blake3"; }
+    rollback { restore.from: "/var/ai-chat/quarantine/"; verify.hash: "blake3"; }
+  }
+
+  action "isolate_process" {
+    require.approvals: "@policy.approvals.quorum";
+    run { freeze.signal: "SIGSTOP-equivalent"; snapshot.ctx: "process_state"; disconnect.io: true; }
+    rollback { thaw.signal: "SIGCONT-equivalent"; restore.ctx: "process_state"; }
+  }
+
+  action "deactivate_hook" {
+    require.approvals: "@policy.approvals.quorum";
+    run { remount.path: "read_only"; rename.suffix: ".disabled"; log.ref: "ThreatEvent.v1"; }
+    rollback { rename.suffix: ".enabled"; }
+  }
+}
+
+.governance.loop {
+  cadence: "PT30M";
+  review.roles ["SecuritySteward","ComplianceOfficer","LegalCustodian"];
+  report {
+    include ["new_findings","containment_actions","pending_rollbacks","policy_drift","attestation_failures"];
+    deliver.to: "local.secure_console";
+  }
+  require.dual_control: true;
+}
+
+.api "ai_guardian" {
+  method "scan_now" {
+    args { scope: ["process","filesystem","ai-chat","runtime","agent_registry"]; }
+    run { flow.start("@flow.secure_scan", args.scope); }
+    returns { summary { findings.count; confidence.avg; evidence.hash_index; audit.event_id; } }
+  }
+
+  method "contain" {
+    args { action: ["quarantine_file","isolate_process","deactivate_hook"]; target: "ref"; }
+    run { require.approvals("@policy.approvals"); contain.exec(args.action,args.target); audit.log("ThreatEvent.v1","contain.exec"); }
+    returns { status: "ok"; rollback_ref; }
+  }
+
+  method "rollback" {
+    args { ref: "rollback_ref"; }
+    run { contain.rollback(args.ref); audit.log("ThreatEvent.v1","contain.rollback"); }
+    returns { status: "ok"; }
+  }
+}
+
+.deploy {
+  isolation: "airgapped_local_only";
+  updates { mode: "manual_signed_media"; require.sig: "@identity.keys.sign_primary"; }
+  monitoring { local.console: true; external.telemetry: "disabled"; }
+}

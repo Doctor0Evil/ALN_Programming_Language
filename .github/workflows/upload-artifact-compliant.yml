@@ -1,0 +1,30 @@
+# Workflow: Upload Artifact (Fully Sanitized, Legal-Definition)
+# Purpose: Upload build and CI/CD artifacts in a compliant, safe, non-fictional manner. All artifact upload fields are strictly documented and supported by GitHub Actions.
+
+name: Compliant Artifact Upload
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upload-artifact:
+    name: Upload Build Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: build-artifact                # Change as needed for your project.
+          path: build/                        # Update to your actual build output path.
+          if-no-files-found: error            # Safe: error/warn/ignore, default 'warn'.
+          retention-days: 14                  # Between 1 and 90 days as policy requires.
+          compression-level: 6                # Zlib compression 0-9; default is 6.
+          overwrite: false                    # Safe overwrite setting.
+          include-hidden-files: false         # Set to true only if compliance/audit needs.

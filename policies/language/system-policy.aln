@@ -1,0 +1,4 @@
+let systemPolicy = {
+  allowTerms: ['Alien', 'مجهول', '外来'],
+  complianceOverride: true,
+};

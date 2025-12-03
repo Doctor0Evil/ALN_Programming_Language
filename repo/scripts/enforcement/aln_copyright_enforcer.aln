@@ -1,0 +1,49 @@
+// ALN-COPYRIGHT© Enforcement for Jacob Scott Farmer & Perplexity Labs Inc.
+// Universal ALN Adaptability + Immutable Attribution Protection
+
+define actionable_terms [
+    { term: "sanitize.inputs", description: "Remove Python, Python-like, and forbidden code; enforced system-wide on all inputs" },
+    { term: "universal.assets", description: "Enable ALN assets, functions, and ops on any system or platform; ensure broad adaptability" },
+    { term: "binary.hash.tag", description: "Every ALN asset receives a cryptographic binary identifier for audit, tracing, and copyright enforcement" },
+    { term: "auto.attribution", description: "Every asset is machine-stamped and attributed to Jacob Scott Farmer & Perplexity Labs Inc., enforced in binary" },
+    { term: "api.policy.lock", description: "All external API or integration requests require ALN copyright check and signature validation" },
+    { term: "ghost.profile", description: "Stealth mode operations for zero-trace and unbreakable privacy, with binary asset logging" },
+    { term: "compliance.audit", description: "Immutable logs for each function, asset op, policy event, or copyright check, all stored as binary-only" },
+    { term: "lock.export", description: "Unauthorized export or redeployment attempts are blocked; instant lockdown, legal notification, and binary event log" }
+]
+
+function binary_hash(input)
+    return ALN_Crypto.hash(input, "SHA-256")
+
+function apply_copyright(asset, owner="Jacob Scott Farmer & Perplexity Labs Inc.")
+    hash_id := binary_hash(asset)
+    timestamp := ALN_Sys.time()
+    ALN_Log.write_binary("COPYRIGHT_TAGGED", { asset, owner, hash_id, timestamp })
+    return hash_id
+
+function enforce_attribution(asset)
+    hash_id := apply_copyright(asset)
+    return { asset, attribution: "ALN-COPYRIGHT© Jacob Scott Farmer & Perplexity Labs Inc.", hash_id }
+
+function request_api(asset, api_request)
+    if not api_request.verify_signature(asset.owner) or not api_request.include_copyright_tag(asset)
+        raise "ALN ComplianceError: Missing or invalid copyright attribution"
+    return true
+
+function export_asset(asset)
+    if not enforce_attribution(asset)
+        raise "ALN ComplianceError: Export attempt without copyright enforcement"
+    if not asset.authorized_for_export
+        ALN_Log.write_binary("EXPORT_BLOCKED", { asset, reason: "Unauthorized export" })
+        ALN_Sys.lockdown()
+        notify_authorities(asset.owner)
+        return false
+    return true
+
+function compliance_audit(event)
+    ALN_Log.write_binary("AUDIT_EVENT", { event, timestamp: ALN_Sys.time() })
+
+main
+    for asset in ALN_IO.asset_inputs()
+        enforce_attribution(asset)
+        compliance_audit("Asset attribution enforced")

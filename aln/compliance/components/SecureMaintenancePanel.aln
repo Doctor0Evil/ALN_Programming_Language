@@ -1,0 +1,8 @@
+component SecureMaintenancePanel {
+  policy RealityWriteGuard
+  consent: {token: session.consent_token, scope: "panel-only"}
+  attest_device: "VSC-Artemis" as secure
+  session_integrity: assert(det(session.matrix) == 1)
+  hardware_mode: engage_safe_mode(session_id, encryption: "AES-256-GCM")
+  panel_mode: "read-only"
+}

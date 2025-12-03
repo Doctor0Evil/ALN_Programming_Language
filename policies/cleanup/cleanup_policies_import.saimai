@@ -1,0 +1,47 @@
+// SAIMAI Import: Universal Cleanup Execution for ALN-Superintelligence-Programming.git
+
+DatashardImport "RepositoryCleanup-Universal-v1.0"
+{
+  Shard: "StaleBranchRemoval"
+  PolicyFile: "/policies/cleanup/policy-stale-branch-removal.aln"
+  Execute:
+    - IdentifyInactiveBranches(age_threshold: 30, exclude: ["main","dev","release"])
+    - DeleteBranch(remote: true, local: true, unprotected: true)
+
+  Shard: "ArtifactExpiry"
+  PolicyFile: "/policies/cleanup/policy-artifact-expiry.aln"
+  Execute:
+    - PurgeArtifacts(aging_days: 14, retain_latest: true)
+    - CronSchedule("0 3 * * *")
+
+  Shard: "SensitiveDataRemoval"
+  PolicyFile: "/policies/cleanup/policy-sensitive-removal.aln"
+  Execute:
+    - ScanSensitive(patterns: ["key", "password", "secret", "token"])
+    - RemoveUsingFilterRepo()
+    - PreCommitHookEnforcement()
+    - ActivateIncidentChecklist()
+
+  Shard: "BatchDirectoryReset"
+  PolicyFile: "/policies/cleanup/policy-batch-dir-reset.aln"
+  Execute:
+    - DirectoryReset(command: "git clean -fdx && git reset --hard HEAD")
+    - TriggerOnEvent("post-merge")
+
+  Shard: "PackageReleasePrune"
+  PolicyFile: "/policies/cleanup/policy-package-release-prune.aln"
+  Execute:
+    - PruneOldPackages(keep_last: 3)
+    - RemoveLegacyReleases(retention_days: 120, unmaintained_only: true)
+
+  ComplianceAudit:
+    - RecordAllExecutions()
+    - LogOutput("/policies/cleanup/compliance_audit.log")
+    - Transparency(enabled: true)
+
+  AccessMode: AuthorizedUsersOnly
+  Encryption: AES-256
+  Integration: "ALN/MAI/SAI Direct"
+}
+
+EndDatashardImport

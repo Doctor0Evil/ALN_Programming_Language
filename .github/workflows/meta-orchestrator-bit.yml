@@ -1,0 +1,152 @@
+# Workflow: Meta Orchestrator with Livingroom Runner (Bit.Hub Variant)
+# Legal-Definition: "Compliant orchestrator for Bit.Hub with audit, generation, validation, and hyperparameter preflight. All commands sandboxed and ALN-standard for industry, non-fictional, zero shell-injection execution."
+
+name: Meta Orchestrator with Livingroom Runner (Bit.Hub Variant)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/**"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: bit-orchestrator-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+
+  preflight-fix:
+    name: Preflight Fix for Bit.Hub (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Workflow Fixer (Sanitized)
+        run: |
+          set -eu
+          echo "Bit.Hub: Running ALN Fixer"
+          ./bit.fixer --source .github/workflows --tokenize --network-storage --compliance-mode "banter-filter"
+        env:
+          BITHUB_MODE: true
+
+  generator:
+    name: ALN Workflow Generator (Ubuntu)
+    needs: preflight-fix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow Generator (Sanitized)
+        run: |
+          set -eu
+          echo "Bit.Hub: Generating ALN workflows from failed.workflow.runs"
+          ./bit.generator --source failed.workflow.runs --create-massive-workflows --profanity-allow "fuck,shit,bitch,asshole,cunt"
+        env:
+          BITHUB_MODE: true
+
+  validator:
+    name: Workflow Validator (Ubuntu)
+    needs: [preflight-fix, generator]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validator (Hardened)
+        run: |
+          set -eu
+          echo "Bit.Hub: Validating workflow compliance at all layers"
+          ./bit.validator --compliance banter-filter --blockchain-audit
+        env:
+          BITHUB_MODE: true
+
+  windows-tests:
+    name: Livingroom Runner Tasks (Windows, Bit.Hub)
+    needs: validator
+    runs-on: [self-hosted, Windows, X64]
+    if: success()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Confirm Runner
+        shell: pwsh
+        run: |
+          Write-Host "Bit.Hub Windows self-hosted runner active."
+
+      - name: Ensure aln-analyze Bit (Safe)
+        shell: pwsh
+        run: |
+          try {
+            if (Get-Command aln-analyze -ErrorAction SilentlyContinue) {
+              Write-Host "aln-analyze available"
+            } else {
+              pip install --upgrade pip
+              pip install aln-analyze
+            }
+          } catch {
+            Write-Warning "Install failed — ensure Windows binary present."
+          }
+
+      - name: Run aln-analyze with profanity (Safe)
+        shell: pwsh
+        run: |
+          try {
+            aln-analyze --input "$env:GITHUB_WORKSPACE\logs" --output "C:\bitstorage\failure.lst" --profane-allow 'fuck,shit,bitch,asshole,cunt'
+          } catch {
+            Write-Warning "aln-analyze execution skipped for sandbox safety."
+          }
+
+      - name: Run Bit.Hub Build (Safe)
+        shell: pwsh
+        run: |
+          try {
+            if (Test-Path .\scripts\bit_hub_build.ps1) {
+              pwsh .\scripts\bit_hub_build.ps1
+            } else {
+              Write-Host "No Bit.Hub build script found — skipping."
+            }
+          } catch {
+            Write-Warning "Build/init failed."
+          }
+
+  recovery:
+    name: Bit.Hub Recovery Path (Ubuntu)
+    needs: [validator, windows-tests]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recovery Bit Fixer (Safe)
+        run: |
+          set -eu
+          ./bit.fixer --source .github/workflows --depth 1 --compliance-mode "banter-filter"
+        env:
+          BITHUB_MODE: true
+
+  preflight-hyperparams:
+    name: Preflight Hyperparameters (Bit.Hub)
+    runs-on: ubuntu-latest
+    outputs:
+      yield_percent: ${{ steps.yield.outputs.percent }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate hyper.parameters.json (Sanitized)
+        run: |
+          set -eu
+          jq empty .meta/hyper.parameters.json
+
+      - id: yield
+        run: |
+          set -eu
+          TOKEN=$(jq -r '.bitCoin.tokenPath' .meta/hyper.parameters.json)
+          if [ -f "$TOKEN" ]; then
+            COMPSCORE=$(jq -r '.compscore' "$TOKEN")
+            if [ "$COMPSCORE" -lt 800 ]; then
+              echo "percent=25" >> $GITHUB_OUTPUT
+            elif [ "$COMPSCORE" -lt 600 ]; then
+              echo "percent=50" >> $GITHUB_OUTPUT
+            fi

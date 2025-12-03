@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="28">
+  <linearGradient id="a" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <rect rx="3" width="240" height="28" fill="#555"/>
+  <rect rx="3" x="150" width="90" height="28" fill="#0366d6"/>
+  <path fill="#0366d6" d="M150 0h4v28h-4z"/>
+  <rect rx="3" width="240" height="28" fill="url(#a)"/>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="12">
+    <text x="80" y="18">Sovereign Replication</text>
+    <text x="194" y="18">Enforced</text>
+  </g>
+</svg>

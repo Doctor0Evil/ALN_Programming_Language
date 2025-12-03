@@ -1,0 +1,35 @@
+program Workflow.SafeGuard {
+  entrypoint: guard
+  description: """
+    Workflow.SafeGuard is a secure automation policy used to safeguard organizational workflows against malicious or non-compliant script execution and enforce critical compliance standards. All processes are supervised by AI to ensure legal operation, monitoring, and auditability.
+    This workflow prohibits known code injection and risky scripting patterns, mandates the execution of key compliance controls, and enforces dependency integrity, thus reducing the attack surface and supporting enterprise risk management. Legal definitions and operational standards are derived from globally accepted cybersecurity frameworks and regulatory best practices.
+  """;
+  rules:
+    - forbid_patterns:
+        # Explicitly deny known code injection and remote execution patterns
+        patterns: [
+          "curl\\s*\\|\\s*bash",
+          "wget\\s*\\|\\s*sh",
+          "unpinned\\s+actions",
+          "id-token\\s+perms",
+          "(sudo|su)\\s+-c\\s+['\\\"]?[^\\s]+['\\\"]?"  # Forbid arbitrary root execution patterns
+        ]
+        rationale: "Denies scripting and action patterns that expose workflows to remote-code-execution, privilege escalation, and unchecked permissions abuse per [NIST SP 800-53][web:2][web:3].";
+    - required_checks:
+        checks: [
+          compliance_gate,     # Automated pre-merge regulatory checks (e.g., GDPR, SOX, HIPAA)
+          signature_verification, # Require GPG/cryptographic signature verification for all code sources
+          audit_logging        # Enforce immutable, real-time logging of all key workflow events and approvals
+        ]
+        rationale: "Implements multi-layer automated verification (human and machine), mandatory logging per law, and zero-trust supply chain assurance.";
+    - enforce_dependencies:
+        compliance_pass: true # All third-party dependencies and artifacts must pass security gates and license checks.
+        rationale: "Prevents dependency confusion, typosquatting, and supply chain infiltration through rigorous dependency verification and SBOM management, per CIS Controls and SLSA framework.";
+  mode: "ai.supervised"
+  supervision:
+    # All enforcement is monitored and decisions are logged for post-incident forensics
+    supervisors: ["ALN_ComplianceGuard", "MAI_AuditPilot"]
+    incident_response: 
+      retention_days: 730  # Logs retained for 2 years as required by major regulatory regimes
+      notification: "security-compliance@enterprise-domain.com"
+}

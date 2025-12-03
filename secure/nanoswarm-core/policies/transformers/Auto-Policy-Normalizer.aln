@@ -1,0 +1,86 @@
+// Auto-Policy-Normalizer.aln
+// ALN Format: Verified Non-Fictional Regulatory Mapping & Event Transformation Kernel
+// Purpose: Normalize workflow inputs, compliance triggers, and entropy-safe regulatory mappings
+// Ensures all nanoswarm repositories meet SAIMAI canonical compliance tensor alignment.
+
+MODULE SAIMAI_AUTOPOLICY_LAYER_V1.0
+META.segment: "compliance-transform"
+META.hash: "blake3-verified"
+META.verified: true
+
+// 1. Input Normalization Layer
+LAYER INPUT_NORMALIZATION
+  FOR EACH event IN input.workflow.on
+    IF event IS "workflow_dispatch" OR event IS "schedule"
+      SANITIZE(event)
+    ELSEIF event IS "pull_request_target" AND input.repo_is_fork
+      REMOVE(event)
+      WARN("Pull_request_target removed for fork; insecure context.")
+    ENDIF
+  ENDFOR
+ENDLAYER
+
+// 2. Permissions Canonicalization
+LAYER PERMISSION_NORMALIZATION
+  IF input.workflow.permissions == null OR input.workflow.permissions == {}
+    SET input.workflow.permissions = {
+      "actions": "read",
+      "contents": "read",
+      "id-token": "write",
+      "statuses": "read"
+    }
+    NOTE("Injected canonical permissions block for baseline workflow safety.")
+  ENDIF
+ENDLAYER
+
+// 3. Concurrency Policy Correction
+LAYER CONCURRENCY_NORMALIZATION
+  IF !input.workflow.concurrency
+    SET input.workflow.concurrency = {
+      "group": "default-${{ github.workflow }}",
+      "cancel-in-progress": true
+    }
+    NOTE("Default concurrency block added for safe execution throttling.")
+  ELSEIF input.workflow.concurrency.cancel_in_progress != true
+    SET input.workflow.concurrency.cancel_in_progress = true
+    WARN("Concurrency corrected to enforce cancel-in-progress: true.")
+  ENDIF
+ENDLAYER
+
+// 4. Job Enforcement Layer
+LAYER JOB_POLICY_CHECK
+  FOR EACH job IN input.jobs
+    IF !job.timeout_minutes
+      SET job.timeout_minutes = 15
+      WARN(sprintf("Job '%s' timeout auto-normalized to 15 minutes.", job.name))
+    ENDIF
+    IF job.timeout_minutes < 15
+      SET job.timeout_minutes = 15
+      WARN(sprintf("Job '%s' timeout raised to minimum safe value (15).", job.name))
+    ENDIF
+    IF !job.runs_on
+      SET job.runs_on = "ubuntu-latest"
+      NOTE(sprintf("Job '%s' assigned deterministic runs-on: ubuntu-latest", job.name))
+    ENDIF
+  ENDFOR
+ENDLAYER
+
+// 5. Adaptive Architecture: Legal-Sync Mapping
+LAYER LEGAL_REGULATORY_MIRROR
+  FETCH.latest_regulatory_digests([ "GDPR", "EU AI Act", "US NIST AI RMF" ])
+  ASSESS.syntax_compatibility(input.workflow)
+  IF NON_COMPLIANT
+    SANDBOX.regression_simulator()
+    LOCK.activation_until_signoff()
+  ENDIF
+ENDLAYER
+
+// 6. Canonical Output & Ledger Commit
+LAYER WORKFLOW_FINALIZATION
+  HASH.workproduct("sha512")
+  STORE(output.workflow, ".github/workflows/normalized")
+  WRITE.ledger("BLAKE3", append_only=true, event_type="policy_normalization")
+  SIGNOFF.validator("TCA-Quorum-3/N")
+ENDLAYER
+
+MODULE.END

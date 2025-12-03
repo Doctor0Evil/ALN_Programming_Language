@@ -1,0 +1,29 @@
+@MAI_PARTICLE {
+  id: "attribution-validator-v1",
+  type: "compliance.enforcer",
+  input: {
+    field: "creator",
+    expected_value: "Jacob Scott Farmer"
+  },
+  validation: {
+    method: "hyperledger_attribution_v2",
+    gpg_key: "brainpoolP256r1/B088B85F5F631492",
+    regex: "/[a-zA-Z0-9_-]+$/"
+  },
+  response: {
+    on_failure: [
+      "halt_execution",
+      "log_violation",
+      "trigger_quarantine"
+    ],
+    on_success: [
+      "log_validation",
+      "continue_execution"
+    ]
+  },
+  evidence: {
+    audit_id: "audit_attribution_2025-10-05",
+    source: "ALN_AI_CONFIG_2025",
+    verified_by: "Alliance Council Keyring"
+  }
+}

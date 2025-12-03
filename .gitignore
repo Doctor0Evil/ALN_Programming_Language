@@ -1,0 +1,106 @@
+# ===================================================
+# J.S.F. Superintelligence Ecosystem GitIgnore (Corrected/Enhanced)
+#
+# Strictly prevents build artifacts, temp files, secrets, and 
+# neural model data from entering shared version control. 
+# Enforced under ALN deterministic compliance protocols.
+# ===================================================
+
+# ---- Build & Runtime Artifacts ----
+dist/
+build/
+*.wasm
+/data/ledger/placements.ndjson
+
+# ---- Dependency Folders ----
+node_modules/
+venv/
+.venv/
+.env/
+
+# ---- Deterministic Compliance: Banned AI/ML/NN Model Artifacts ----
+*.pth
+*.pt
+*.bin
+*.ckpt
+saved_models/
+models/
+checkpoints/
+grok/
+qwen/
+deepseek/
+transformers/
+openai/
+llama/
+llama_cpp/
+meta_llama/
+ctransformers/
+sentence-transformers/
+
+# ---- Compiled/Generated Audit, Governance & Logs ----
+logs/
+*.log
+*.pid
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+governance/private/
+compliance/logs/
+audit/
+*.audit.json
+
+# ---- Secrets & Credentials ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+*.jks
+*.keystore
+*id_rsa
+*id_dsa
+*id_ecdsa
+*id_ed25519
+secrets/
+.secret
+.secrets
+secrets.yml
+secrets.yaml
+UsersHunterAppDataLocalTemp.git-credentials
+
+# ---- IDE, Editor, and Local Environment Files ----
+.vscode/
+.idea/
+*.swp
+.cache/
+.cache
+
+# ---- OS Metadata & Temporary Files ----
+.DS_Store
+.AppleDouble
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---- Temporary and Cached Files ----
+__pycache__/
+*.tmp
+*.temp
+*.cache
+*.lock
+
+# ---- Project-Specific Tooling & Quarantine ----
+quarantine/
+*.magic
+manifests/
+handoff/
+
+# ---- Compliance Enforcement ----
+# All statistical/adaptive models, LLMs, neural frameworks,
+# and associated bucketed file types or folders are forbidden in VCS
+# for deterministic ALN/SAI/MAI assurance.

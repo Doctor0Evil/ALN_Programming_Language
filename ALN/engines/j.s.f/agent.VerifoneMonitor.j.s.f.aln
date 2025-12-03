@@ -1,0 +1,47 @@
+// ===== ALN Superintelligence Programming - JSF Engine Agent =====
+//   Monitoring Agent for Verifone (Commander/C-Site, PayHost)
+//   Author: Jacob Scott Farmer (JSF) style compliance
+//   Placement: ALN/engines/j.s.f/agent.VerifoneMonitor.j.s.f.aln
+
+import "core.agent"
+import "core.alerts"
+import "core.network"
+import "utils.j.s.f.monitor"
+
+// --- Agent Definition: Multi-endpoint Connection Monitor ---
+
+agent VerifoneMonitor.j.s.f {
+    property connection_status : state
+    property connection_timeout : 30       // seconds
+    property retry_attempts : 3
+    property alert_threshold : 1
+    uses_monitor jsf_heartbeat
+    monitor "C-Site" as heartbeat {
+        interval 10
+        on_fail    increment retry_count
+        on_fail    if retry_count >= retry_attempts then 
+                      trigger Alert "ConnectionLost:C-Site"
+        action check_connection endpoint "C-Site" timeout connection_timeout
+        on_success reset retry_count to 0
+    }
+    monitor "PayHost" as heartbeat {
+        interval 10
+        on_fail    increment retry_count
+        on_fail    if retry_count >= retry_attempts then 
+                      trigger Alert "ConnectionLost:PayHost"
+        action check_connection endpoint "PayHost" timeout connection_timeout
+        on_success reset retry_count to 0
+    }
+    on Alert "ConnectionLost:*" {
+        action notify "admin" message "Commander is no longer connected to $(endpoint)"
+        action escalate "network_team"
+        action log_event "Lost connectivity to $(endpoint)"
+    }
+}
+
+// === Optionally Extend This Block For Multi-Agent Scenarios ===
+agent VerifonePOSMonitor.j.s.f {
+    import agent.VerifoneMonitor.j.s.f
+    uses_monitor jsf_secondary_heartbeat
+    // Add extended or specialized monitoring for additional endpoints if required
+}

@@ -1,0 +1,147 @@
+# Workflow: .bithub-actions Orchestration (Sanitized/ALN/Legal)
+# Legal-Definition: "Repository orchestration pipeline for safe audit logging, workflow/image/service matrix extraction, and policy compliance with explicit reproducibility and shell command hygiene. External installs and token usage are fully guarded."
+
+name: .bithub-actions Orchestration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repo (safe, clean)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+          clean: true
+          set-safe-directory: true
+
+      - name: Install required tooling (hardened)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          if ! command -v yq >/dev/null 2>&1; then
+            wget -qO /tmp/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+            sudo mv /tmp/yq /usr/local/bin/yq
+            sudo chmod +x /usr/local/bin/yq
+          fi
+          if ! command -v gh >/dev/null 2>&1; then
+            sudo apt-get install -y gh
+          fi
+          if [ -n "${{ secrets.BITHUB_TOKEN }}" ]; then
+            echo "${{ secrets.BITHUB_TOKEN }}" | gh auth login --with-token
+          elif [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+            echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+          else
+            echo "No valid token for gh auth; continuing unauthenticated."
+          fi
+
+      - name: Load or synthesize .bithub.yml (hardened sanitized)
+        id: spec
+        run: |
+          set -euo pipefail
+          if [ -f ".bithub.yml" ]; then
+            echo "spec_path=.bithub.yml" >> $GITHUB_OUTPUT
+          else
+            echo "No .bithub.yml found; generating safe default."
+            cat > .bithub.yml <<'EOF'
+apiVersion: bithub/v1
+kind: OrchestrationSpec
+orchestration:
+  flows:
+    - name: default
+      sequence:
+        - gate: policy
+        - action: bit-image
+        - workflows:
+            series:
+              - ".tests-aln"
+              - ".tests-batchfile"
+              - ".tests-lisp"
+images:
+  defaults:
+    platforms: [ "linux/amd64" ]
+EOF
+            echo "spec_path=.bithub.yml" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Initialize orchestration audit (safe)
+        id: audit
+        run: |
+          set -euo pipefail
+          mkdir -p orchestration_audit
+          TS=$(date +%Y%m%d_%H%M%S)
+          LOG="orchestration_audit/run_${TS}.log"
+          JSON="orchestration_audit/run_${TS}.json"
+          echo "Orchestration Run - $(date)" > "$LOG"
+          echo '{"workflows":[],"images":[],"meta":{"ts":"'"$TS"'", "repo":"'"$GITHUB_REPOSITORY"'", "sha":"'"$GITHUB_SHA"'"}}' > "$JSON"
+          echo "log=$LOG" >> $GITHUB_OUTPUT
+          echo "json=$JSON" >> $GITHUB_OUTPUT
+
+      - name: Run policy gate (optional, safe)
+        continue-on-error: true
+        run: |
+          if [ -x .bithub/policy.sh ]; then
+            .bithub/policy.sh || echo "Policy gate error/warnings; continuing."
+          else
+            echo "No .bithub/policy.sh; skipping policy gate."
+          fi
+
+      - name: Extract image/service matrix (ALN)
+        id: img
+        env:
+          SPEC: ${{ steps.spec.outputs.spec_path }}
+        run: |
+          set -euo pipefail
+          SERVICES_JSON=$(yq -r '.images.services // []' "$SPEC" | jq -c '.')
+          PLAT=$(yq -r '.images.defaults.platforms // ["linux/amd64"] | join(",")' "$SPEC")
+          echo "services=$SERVICES_JSON" >> $GITHUB_OUTPUT
+          echo "platforms=$PLAT" >> $GITHUB_OUTPUT
+
+      - name: Log image services for build/test (audit-safe)
+        run: |
+          services='${{ steps.img.outputs.services }}'
+          platforms='${{ steps.img.outputs.platforms }}'
+          LOG="${{ steps.audit.outputs.log }}"
+          if [ "$services" = "[]" ]; then
+            echo "No explicit services configured; using discovery mode only." | tee -a "$LOG"
+          else
+            echo "$services" | jq -c '.[]' | while read -r svc; do
+              NAME=$(jq -r '.name // empty' <<<"$svc")
+              CONTEXT=$(jq -r '.context // "."' <<<"$svc")
+              DF=$(jq -r '.dockerfile // "Dockerfile"' <<<"$svc")
+              TEST_CMD=$(jq -r '.testCommand // "/bin/sh -lc \"echo OK\""' <<<"$svc")
+              echo "Service: $NAME | Context: $CONTEXT | Dockerfile: $DF | Platforms: $platforms | Test: $TEST_CMD" | tee -a "$LOG"
+            done
+          fi
+
+      - name: Discover additional workflows (sanitized)
+        run: |
+          LOG="${{ steps.audit.outputs.log }}"
+          find .github/workflows -type f -name "*.yml" ! -name "bithub-actions-orchestration.yml" \
+            | while read -r wf; do
+              echo "Discovered workflow: $wf" | tee -a "$LOG"
+            done
+
+      - name: Upload orchestration audit log (safe, explicit)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bithub-orchestration-audit
+          path: |
+            ${{ steps.audit.outputs.log }}
+            ${{ steps.audit.outputs.json }}
+            orchestration_audit/**

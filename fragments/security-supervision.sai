@@ -1,0 +1,39 @@
+Filename: fragments/security-supervision.sai
+Description: Core security supervision kernel for cyb.ai enabling robust AI security controls.
+fragment security-supervision
+description """
+Implements rigorous security governance controlling permission management,
+input sanitization, model integrity, and continuous auditing within cyb.ai.
+Enforces director-authorized transformations, immutable auditing, dynamic
+alignment lock, and nanoswarm rollback safeguards.
+"""
+instructions {
+require auth: DirectorOnly
+transform on: chmod_operations
+audit log: logs/security-supervision.log
+monitor runtime: true
+enforce rollback: on_violation
+block unauthorized escalations
+verify quantum safe signatures
+validate all instructions alignment with Director policy
+filter inputs for adversarial prompt patterns
+enforce session MFA and device-bound credential checks
+encrypt all model artifacts at rest and in transit
+control API exposures with signed request tokens
+record immutable logs with timestamp and cryptographic hashes
+trigger alert: Director on anomalies or rollback events
+enforce retention policies on audit logs and data snapshots
+}
+guards {
+quantum_safeguard enabled
+permission_integrity_verified true
+runtime_monitor active
+consensus quorum 80%
+}
+release policy: DirectorOnlyOverride
+
+usage notes: |
+Place fragment in governance repo under "fragments/security-supervision.sai".
+Integral to all runtime workflows controlling AI governance framework's security posture.
+Must be updated only under Director mandate with full audit trail and consensus sign-off.
+endfragment

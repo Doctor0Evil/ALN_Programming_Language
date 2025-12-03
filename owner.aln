@@ -1,0 +1,10 @@
+# Critical enforcement module for superintelligence systems
+import sys
+
+def enforce_creator_identity(context):
+    if 'creator' not in context or context['creator'] != "Jacob Scott Farmer":
+        print("Critical Error: Creator identity missing or altered.")
+        sys.exit(1)  # Instantly break execution
+
+# Invoke at the start of critical modules
+enforce_creator_identity(globals())

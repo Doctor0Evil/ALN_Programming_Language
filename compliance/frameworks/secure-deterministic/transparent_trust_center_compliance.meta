@@ -1,0 +1,40 @@
+# Transparent Trust Center — Compliance Scope Definition
+# Format: ALN Meta, Deterministic, Audit-Ready
+
+SCOPE_DEFINITION {
+
+  RULE_BASED_RISK_SCORING {
+    VALIDATION: "Ensure only human-assigned weights (w1, w2, w3) used in formula Risk_Score_session; no ML or stochastic terms present."
+    TRIGGER_CONDITION: "On session closure or compliance checkpoint."
+    OUTPUT: "Normalized risk score, with full weight/audit trace."
+    AUDIT_PROOF: "Mathematical expansion of each input; log archival."
+  }
+
+  EVENT_DRIVEN_ISOLATION {
+    VALIDATION: "Session state changes only upon deterministic evaluation of unapproved_action(s)==1; verify exclusion of anomaly/statistical detectors."
+    TRIGGER_CONDITION: "Upon execution of user action."
+    OUTPUT: "State change (active → isolated) with timestamp and reason."
+    AUDIT_PROOF: "Session evaluation log with logic trace."
+  }
+
+  COMPLIANCE_AUTOMATION {
+    VALIDATION: "Control_i and Status_i are deterministic state variables. Script outputs Compliance(t) directly; verify all steps as mathematical, not predictive."
+    TRIGGER_CONDITION: "Every compliance update tick or admin-initiated diagnostic."
+    OUTPUT: "Aggregated compliance score per time t; record with proofs."
+    AUDIT_PROOF: "Formula details with all Control_i and Status_i components logged and traced."
+  }
+
+  QUANTUM_SAFE_CRYPTOGRAPHY {
+    VALIDATION: "Keys and segmentation policies certified with post-quantum standards; cryptographic test vectors included with each rotation event."
+    TRIGGER_CONDITION: "On startup, key rotation, or new session initialization."
+    OUTPUT: "Proof-of-compliance certificate, signed and archived."
+    AUDIT_PROOF: "Certificate chain and crypto test vectors attached per session/key."
+  }
+
+  ENVIRONMENTAL_SEPARATION {
+    VALIDATION: "Matrix enforcement logic reviewed for code purity: no adaptive/stateful AI branching outside deterministic paths."
+    TRIGGER_CONDITION: "On config update, system startup, and scheduled interval checks."
+    OUTPUT: "Matrix proof-of-separation, with audit log."
+    AUDIT_PROOF: "Matrix logic and config snapshots archived."
+  }
+}

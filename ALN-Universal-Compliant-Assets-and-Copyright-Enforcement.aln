@@ -1,0 +1,76 @@
+// ALN-COPYRIGHT© by Jacob Scott Farmer & Perplexity Labs Inc.
+// Universal ALN Expandability, Binary Attribution, and Copyright Protection
+
+define actionable_terms [
+    { term: "sanitize.inputs", description: "Mandatory ALN-only enforcement. Removes all Python and Python-like code, forbidden elements, and rewrites legacy code to ALN on every input, system-wide" },
+    { term: "universal.assets", description: "Assets, functions, and operational modules are auto-adaptable for any OS, hardware, or cloud-node. Enables ALN programs even for mixed legacy systems, ensures external platform utility" },
+    { term: "binary.hash.tag", description: "All assets receive cryptographic binary ID for audit, trace, versioning, legal rights, and copyright defense. Asset movement, updates and deletions always create hash events" },
+    { term: "auto.attribution", description: "Each ALN asset is machine-stamped in binary to recognize Jacob Scott Farmer & Perplexity Labs Inc; always enforced, logged, and update-reflected on all asset states" },
+    { term: "api.policy.lock", description: "Any API or integration uses ALN binary copyright check and signed asset validation; permission denied for missing or invalid attribution" },
+    { term: "ghost.profile", description: "Zero-trace, stealth-mode ops with asset event logging in binary; ensures undetectable deployment and unbreakable privacy" },
+    { term: "compliance.audit", description: "Immutably logs every function, event, and asset state in binary format, permanently accessible to Class-5 operators only" },
+    { term: "lock.export", description: "Unauthorized exports are blocked; events trigger legal notification, asset lockdown, and full binary event log for authorities" },
+    // Exclusive/Universal Functions below:
+    { term: "cross-platform.interop", description: "All ALN assets can be cloned onto Windows, Linux, macOS, iOS, Android, and embedded devices. Hash, encryption, and compatibility checks run at module-load" },
+    { term: "self-repair.module", description: "All assets include autonomous error-repair and fallback. ALN code interpreters attempt self-healing for runtime faults and log repair events" },
+    { term: "immutable.versioning", description: "Every asset state or release is recorded as immutable, binary-only version with timestamp and author attribution. No deletion or alteration without binary notice" },
+    { term: "asset.fingerprint", description: "Every asset and event locally/externally gets a unique cryptographic fingerprint, log-linked to creation and modification events" },
+    { term: "universal.crypto", description: "All distribution, transfer, and storage operations use ALN-compliant cryptography primitives (SHA-256, Curve25519, Post-Quantum signatures) for binary protection" },
+    { term: "external.audit.lock", description: "External systems must verify ALN asset authenticity via binary hash and author record; spoofing or tampering attempts auto-lock and alert Class-5 authorities" }
+]
+
+// Core security and utility functions
+function binary_hash(input)
+    return ALN_Crypto.hash(input, "SHA-256")
+
+function apply_copyright(asset, owner="Jacob Scott Farmer & Perplexity Labs Inc.")
+    hash_id := binary_hash(asset)
+    timestamp := ALN_Sys.time()
+    ALN_Log.write_binary("COPYRIGHT_TAGGED", { asset, owner, hash_id, timestamp })
+    return hash_id
+
+function enforce_attribution(asset)
+    hash_id := apply_copyright(asset)
+    return { asset, attribution: "ALN-COPYRIGHT© Jacob Scott Farmer & Perplexity Labs Inc.", hash_id }
+
+function export_asset(asset)
+    if not enforce_attribution(asset)
+        raise "ALN ComplianceError: Export attempt without copyright enforcement"
+    if not asset.authorized_for_export
+        ALN_Log.write_binary("EXPORT_BLOCKED", { asset, reason: "Unauthorized export" })
+        ALN_Sys.lockdown()
+        notify_authorities(asset.owner)
+        return false
+    return true
+
+function compliance_audit(event)
+    ALN_Log.write_binary("AUDIT_EVENT", { event, timestamp: ALN_Sys.time() })
+
+function universal_adapt(asset)
+    asset_tag := binary_hash(asset)
+    asset.adapted := true
+    asset.compatibility := [ "Windows", "Linux", "macOS", "iOS", "Android", "IoT", "Cloud", "Legacy", "Embedded" ]
+    asset.crypto := "ALN:SHA-256+Curve25519+PQ"
+    compliance_audit("Asset universally adapted")
+    return asset_tag
+
+function fingerprint_asset(asset)
+    return ALN_Crypto.hash(asset + ALN_Sys.time(), "SHA-256")
+
+function on_api_request(asset, api_request)
+    if not api_request.verify_signature(asset.owner) or not api_request.include_copyright_tag(asset)
+        raise "ALN ComplianceError: Missing or invalid copyright attribution"
+    return true
+
+function sanitize_and_integrate(asset)
+    asset_clean := sanitize.inputs(asset)
+    asset_adapt := universal_adapt(asset_clean)
+    enforce_attribution(asset_clean)
+    compliance_audit("Sanitized, integrated, and attributed asset processed")
+    return asset_adapt
+
+main
+    for asset in ALN_IO.asset_inputs()
+        sanitize_and_integrate(asset)
+        compliance_audit("Universal ALN features and compliance enforced")
+        export_asset(asset)

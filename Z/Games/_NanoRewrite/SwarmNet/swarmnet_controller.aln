@@ -1,0 +1,398 @@
+;; SwarmNet Controller Module
+;; Filename: swarmnet_controller.aln
+;; Destination: /Z/Games/_NanoRewrite/SwarmNet/swarmnet_controller.aln
+
+;; ------------------------------------------------------------
+;; PARAMETERS
+;; ------------------------------------------------------------
+(
+    action: string,
+    user: string,
+    hostUrl: string = "http://localhost:7777",
+    telemetryEndpoint: string = "",  ;; e.g., https://your.telemetry/ingest
+    telemetryKey: string = "",       ;; bearer token or instrumentation key
+    integrityKey: string = ""        ;; optional HMAC key for integrity.json verification
+) => {
+
+    ;; ------------------------------------------------------------
+    ;; CONFIGURATION
+    ;; ------------------------------------------------------------
+    repoRoot <- getCurrentDirectory();
+    swarmnetExe <- joinPath(repoRoot, "swarmnet.exe");
+    configsDir <- joinPath(repoRoot, "configs");
+    logsDir <- joinPath(repoRoot, "logs");
+    hostAuditDir <- joinPath(logsDir, "host");
+    agentsAuditDir <- joinPath(logsDir, "agents");
+    tasksDir <- joinPath(repoRoot, ".vscode");
+    workspacePrefix <- "wd13-";
+    seedEnvName <- "SWARMNET_SEED";
+    defaultSeed <- formatDate((getCurrentDate()), "yyyyMMdd-HHmmss") + "-WOD";
+    eventsLog <- joinPath(logsDir, "events.jsonl");
+    logChainFile <- joinPath(logsDir, "logchain.state");
+    integrityManifest <- joinPath(configsDir, "integrity.json");
+    watchdogLoopName <- "SwarmnetWatchdogLoop";
+    globalMutexName <- "Global\\WOD_SwarmnetWatchdogMutex";
+
+    ;; Ensure directories exist
+    ensureDirectories([logsDir, hostAuditDir, agentsAuditDir, tasksDir]);
+
+    ;; Set deterministic seed per session
+    if (!getEnv(seedEnvName)) {
+        setEnv(seedEnvName, defaultSeed);
+        logMessage(">>> Injected " + seedEnvName + "=" + getEnv(seedEnvName));
+    } else {
+        logMessage(">>> Using existing " + seedEnvName + "=" + getEnv(seedEnvName));
+    }
+
+    ;; ------------------------------------------------------------
+    ;; SECURE LOGGING & TELEMETRY
+    ;; ------------------------------------------------------------
+    getFileSha256(path: string): string {
+        if (!fileExists(path)) return "";
+        return toLowerCase(getFileHash(path, "SHA256"));
+    }
+
+    getHmacSha256(text: string, key: string): string {
+        if (!key) return "";
+        bytes <- utf8Encode(text);
+        kbytes <- utf8Encode(key);
+        hmac <- new HMACSHA256(kbytes);
+        return toLowerCase(hexEncode(hmac.computeHash(bytes)));
+    }
+
+    writeLogChain(message: string, category: string = "info"): void {
+        prevLine <- if (fileExists(logChainFile)) readLastLine(logChainFile) else "";
+        prevHash <- if (prevLine) toLowerCase(getFileHashFromStream(utf8Encode(prevLine), "SHA256")) else "";
+        entryObj <- {
+            ts: formatDate((getCurrentDate()), "o"),
+            category: category,
+            msg: message,
+            prevHash: prevHash,
+            seed: getEnv(seedEnvName),
+            host: getEnv("COMPUTERNAME"),
+            user: getEnv("USERNAME")
+        };
+        entry <- jsonCompress(entryObj);
+        appendToFile(eventsLog, entry);
+        writeFile(logChainFile, entry);
+    }
+
+    sendTelemetry(eventType: string, data: map<string, any>): void {
+        recordObj <- {
+            ts: formatDate((getCurrentDate()), "o"),
+            type: eventType,
+            seed: getEnv(seedEnvName),
+            host: getEnv("COMPUTERNAME"),
+            user: getEnv("USERNAME"),
+            data: data
+        };
+        record <- jsonCompress(recordObj);
+        appendToFile(eventsLog, record);
+        if (telemetryEndpoint && telemetryKey) {
+            try {
+                postRequest(telemetryEndpoint, record, {
+                    "Authorization": "Bearer " + telemetryKey,
+                    "Content-Type": "application/json"
+                });
+            } catch (error) {
+                writeLogChain("Telemetry POST failed: " + error.message, "warn");
+            }
+        }
+    }
+
+    ;; ------------------------------------------------------------
+    ;; INTEGRITY & POLICY VALIDATION
+    ;; ------------------------------------------------------------
+    assertBinaryAndConfigs(): bool {
+        if (!fileExists(swarmnetExe)) {
+            logMessage("ERROR: " + swarmnetExe + " missing.", "error");
+            return false;
+        }
+        cfgs <- [
+            "merchantSystem.ing",
+            "directorAI.ing",
+            "virtualDesktop.ing",
+            "operators.ing"
+        ].map(config -> joinPath(configsDir, config));
+
+        for (cfg in cfgs) {
+            if (!fileExists(cfg)) {
+                logMessage("ERROR: Missing config: " + cfg, "error");
+                return false;
+            }
+        }
+
+        if (fileExists(integrityManifest)) {
+            try {
+                manifestText <- readFile(integrityManifest);
+                manifest <- jsonParse(manifestText);
+                for (item in manifest.configs) {
+                    path <- joinPath(configsDir, item.name);
+                    sha <- getFileSha256(path);
+                    if (sha != toLowerCase(item.sha256)) {
+                        logMessage("ERROR: Integrity mismatch for " + item.name, "error");
+                        return false;
+                    }
+                }
+                if (manifest.hmac) {
+                    calc <- getHmacSha256(jsonCompress(manifest.configs), integrityKey);
+                    if (calc != toLowerCase(manifest.hmac)) {
+                        logMessage("ERROR: HMAC mismatch.", "error");
+                        return false;
+                    }
+                }
+                logMessage("Integrity checks passed", "info");
+            } catch (error) {
+                logMessage("Integrity manifest error: " + error.message, "warn");
+            }
+        }
+
+        ;; Policy markers (advisory)
+        policyChecks <- [
+            { file: "directorAI.ing", pattern: "denyFirst" },
+            { file: "virtualDesktop.ing", pattern: "pcOnly" }
+        ];
+
+        for (p in policyChecks) {
+            f <- joinPath(configsDir, p.file);
+            if (fileExists(f)) {
+                content <- readFile(f);
+                if (!regexMatch(content, escapeRegex(p.pattern))) {
+                    logMessage("Policy marker missing in " + p.file + ": " + p.pattern, "warn");
+                }
+            }
+        }
+        return true;
+    }
+
+    testHostHealth(url: string = hostUrl): bool {
+        try {
+            resp <- webRequest(url, { timeout: 2 });
+            return resp.statusCode >= 200 && resp.statusCode < 400;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    ;; ------------------------------------------------------------
+    ;; ACTIONS
+    ;; ------------------------------------------------------------
+    startHost(): void {
+        if (!assertBinaryAndConfigs()) return;
+        logMessage(">>> Starting Swarmnet Host...");
+        sendTelemetry("host_start", { hostUrl: hostUrl });
+        execute(swarmnetExe, [
+            "host",
+            "--config", joinPath(configsDir, "merchantSystem.ing"),
+            "--config", joinPath(configsDir, "directorAI.ing"),
+            "--config", joinPath(configsDir, "virtualDesktop.ing"),
+            "--config", joinPath(configsDir, "operators.ing"),
+            "--seedStrategy", "run-scoped",
+            "--audit", hostAuditDir
+        ]);
+        writeLogChain("Host started", "info");
+    }
+
+    startAgent(userId: string): void {
+        if (!assertBinaryAndConfigs()) return;
+        workspace <- workspacePrefix + userId;
+        userAudit <- joinPath(agentsAuditDir, userId);
+        ensureDirectory(userAudit);
+        logMessage(">>> Starting Agent for " + userId + " (" + workspace + ")...");
+        sendTelemetry("agent_start", { user: userId, workspace: workspace });
+        execute(swarmnetExe, [
+            "agent",
+            "--user", userId,
+            "--workspace", workspace,
+            "--connect", hostUrl,
+            "--audit", userAudit
+        ]);
+        writeLogChain("Agent started: " + userId, "info");
+    }
+
+    attachHost(): void {
+        if (!testHostHealth()) {
+            logMessage("WARN: Host not healthy at " + hostUrl, "warn");
+            writeLogChain("Attach: host unhealthy", "warn");
+        }
+        logMessage(">>> Attaching to Host...");
+        sendTelemetry("attach", { hostUrl: hostUrl });
+        execute(swarmnetExe, ["attach", "--connect", hostUrl]);
+    }
+
+    generateVSCodeTasks(): void {
+        ensureDirectory(tasksDir);
+        scriptName <- "swarmnet.magic";
+        runner <- "powershell";
+        tasks <- {
+            version: "2.0.0",
+            tasks: [
+                {
+                    label: "Swarmnet: Start Host",
+                    type: "shell",
+                    command: runner,
+                    args: ["-File", scriptName, "host"],
+                    group: "build"
+                }
+            ]
+        };
+
+        for (i <- 1; i <= 8; i++) {
+            user <- formatString("user{0:D2}", i);
+            tasks.tasks.push({
+                label: "Swarmnet: Start Agent " + user,
+                type: "shell",
+                command: runner,
+                args: ["-File", scriptName, "agent", "-User", user],
+                group: "build"
+            });
+        }
+
+        tasks.tasks.push({
+            label: "Swarmnet: Attach Host",
+            type: "shell",
+            command: runner,
+            args: ["-File", scriptName, "attach"],
+            group: "build"
+        });
+
+        outFile <- joinPath(tasksDir, "tasks.json");
+        writeFile(outFile, jsonStringify(tasks, 5));
+        logMessage(">>> VS Code tasks.json generated: " + outFile);
+        writeLogChain("VS Code tasks generated", "info");
+    }
+
+    ;; ------------------------------------------------------------
+    ;; WATCHDOG
+    ;; ------------------------------------------------------------
+    startWatchdog(): void {
+        if (jobExists(watchdogLoopName)) {
+            logMessage(">>> Watchdog already running.");
+            return;
+        }
+
+        try {
+            mutex <- new Mutex(false, globalMutexName);
+            if (!mutex.waitOne(0, false)) {
+                logMessage(">>> Mutex held by another watchdog. Not starting.");
+                return;
+            }
+        } catch (error) {
+            writeLogChain("Mutex error: " + error.message, "warn");
+        }
+
+        logMessage(">>> Starting watchdog (" + watchdogLoopName + ")...");
+        startBackgroundJob(watchdogLoopName, () => {
+            mutex <- new Mutex(false, globalMutexName);
+            setDirectory(repoRoot);
+            while (true) {
+                try {
+                    proc <- getProcessByName("swarmnet");
+                    if (!proc) {
+                        appendToFile(joinPath(logsDir, "watchdog.log"), formatString("[{0}] Host absent. Starting...\n", formatDate(getCurrentDate(), "s")));
+                        execute(swarmnetExe, [
+                            "host",
+                            "--config", joinPath(configsDir, "merchantSystem.ing"),
+                            "--config", joinPath(configsDir, "directorAI.ing"),
+                            "--config", joinPath(configsDir, "virtualDesktop.ing"),
+                            "--config", joinPath(configsDir, "operators.ing"),
+                            "--seedStrategy", "run-scoped",
+                            "--audit", hostAuditDir
+                        ]);
+                    } else {
+                        appendToFile(joinPath(logsDir, "watchdog.log"), formatString("[{0}] Host running.\n", formatDate(getCurrentDate(), "s")));
+                    }
+                } catch (error) {
+                    appendToFile(joinPath(logsDir, "watchdog.log"), formatString("[{0}] Error: {1}\n", formatDate(getCurrentDate(), "s"), error.message));
+                }
+                sleep(120000); ;; 120 seconds
+            }
+        }, [repoRoot, swarmnetExe, configsDir, hostAuditDir, globalMutexName]);
+        writeLogChain("Watchdog started", "info");
+    }
+
+    stopWatchdog(): void {
+        job <- getJob(watchdogLoopName);
+        if (job) {
+            stopJob(job);
+            logMessage(">>> Watchdog stopped.");
+            writeLogChain("Watchdog stopped", "info");
+        } else {
+            logMessage(">>> No watchdog job found.");
+        }
+    }
+
+    ;; ------------------------------------------------------------
+    ;; ADMIN-MODE OPTIONALS
+    ;; ------------------------------------------------------------
+    isAdmin(): bool {
+        return getCurrentUser().isInRole("Administrator");
+    }
+
+    registerSignedTask(taskName: string = "SwarmnetHostSigned", scriptPath: string = joinPath(repoRoot, "swarmnet.magic"), intervalMinutes: int = 2): void {
+        if (!isAdmin()) {
+            logMessage("ERROR: Admin required.", "error");
+            return;
+        }
+        sig <- getAuthenticodeSignature(scriptPath);
+        if (sig.status != "Valid") {
+            logMessage("ERROR: Script not signed or invalid.", "error");
+            writeLogChain("Signature invalid for scheduled task", "error");
+            return;
+        }
+        actionArgs <- "-NoProfile -WindowStyle Hidden -ExecutionPolicy AllSigned -File \"" + scriptPath + "\" host";
+        action <- new ScheduledTaskAction("powershell.exe", actionArgs);
+        trigger <- new ScheduledTaskTriggerOnce(getCurrentDate().addMinutes(1), new TimeSpan(0, intervalMinutes, 0), TimeSpan.maxValue);
+        settings <- new ScheduledTaskSettings(true, true);
+        principal <- new ScheduledTaskPrincipal("SYSTEM", "Highest");
+        registerScheduledTask(taskName, action, trigger, settings, principal);
+        writeLogChain("Signed scheduled task registered: " + taskName, "info");
+        logMessage(">>> Signed scheduled task registered.");
+    }
+
+    applockerIntuneGuidance(): void {
+        logMessage("AppLocker/Intune: Allow only signed swarmnet.exe via publisher or hash rules. Deploy via Intune Endpoint Protection -> AppLocker. (Admin required to enforce.)");
+        writeLogChain("AppLocker/Intune guidance emitted", "info");
+    }
+
+    ;; ------------------------------------------------------------
+    ;; DISPATCH
+    ;; ------------------------------------------------------------
+    switch (action) {
+        case "host":
+            startHost();
+            break;
+        case "agent":
+            if (user) startAgent(user);
+            else logMessage("Please specify -User (e.g., user03)");
+            break;
+        case "attach":
+            attachHost();
+            break;
+        case "tasks":
+            generateVSCodeTasks();
+            break;
+        case "watchdog":
+            startWatchdog();
+            break;
+        case "watchdog:stop":
+            stopWatchdog();
+            break;
+        case "task:register":
+            registerSignedTask();
+            break;
+        case "applocker:intune":
+            applockerIntuneGuidance();
+            break;
+        default:
+            logMessage("Usage:");
+            logMessage("  swarmnet_controller.aln --action host");
+            logMessage("  swarmnet_controller.aln --action agent --user user03");
+            logMessage("  swarmnet_controller.aln --action attach");
+            logMessage("  swarmnet_controller.aln --action tasks");
+            logMessage("  swarmnet_controller.aln --action watchdog          # user-mode");
+            logMessage("  swarmnet_controller.aln --action watchdog:stop     # stop loop");
+            logMessage("  swarmnet_controller.aln --action task:register     # admin; signed scheduled task");
+            logMessage("  swarmnet_controller.aln --action applocker:intune  # guidance");
+    }
+};

@@ -1,0 +1,127 @@
+party: [Entity executing the contract; must provide valid legal name, jurisdiction, and authorized representative.]
+effective_date: [Contract commencement date, ISO-standard YYYY-MM-DD.]
+recitals: [
+    Articulate factual reasons and mutual objectives for entering the agreement.
+    Must include: business rationale, scope, and strategic purpose.
+]
+definitions: [
+    Explicitly list and clarify every key term (e.g., "Services," "IP," "Confidential Information").
+    Include any industry, regulatory, or custom interpretations.
+]
+services_provided: [
+    Detailed enumeration of deliverables, including milestones, technical specs, and performance criteria.
+]
+payment_terms: [
+    Specify: amounts, due dates, invoicing protocols, payment methods (e.g., ACH, wire), late fees, audit rights.
+]
+confidentiality_clause: [
+    Prohibit disclosure of specified confidential information.
+    Define duration of confidentiality, allowable disclosures (if any), and remedies for breach.
+]
+intellectual_property_clause: [
+    All work is company-owned (state: "company is sole and exclusive owner of all deliverables and inventions").
+    Employee assigns all present and future rights.
+    All works within contract scope are considered “works for hire.”
+    Employee is required to promptly disclose all inventions.
+    Employee must execute further documents perfecting rights.
+]
+warranty_clause: [
+    Provider warrants no known infringement of third-party IP.
+    Include explicit disclaimer of implied warranties (merchantability, fitness, etc.).
+    Knowledge-qualified warranty applies only to known issues at time of execution.
+]
+indemnity_clause: [
+    Provider defends customer against all third-party IP claims
+    Provider responsible for all damages, costs, settlements within defined scope (trade secret, patent, copyright, trademark).
+    Indemnity triggered when a third-party claim is formally filed.
+    No indemnity for customer misuse.
+    Expressly include a cap on provider’s liability (dollar amount, e.g., $1M; customizable).
+    Customer must promptly notify provider of claim; parties cooperate in defense.
+]
+license_rights: [
+    Research and confirm actual IP owner.
+    Negotiate and memorialize scope of any licenses, if relevant.
+    Must sign and record license agreements.
+    Continuous monitoring and compliance verification required.
+]
+employee_obligations: [
+    Immediate disclosure of inventions.
+    Assignment of all rights and execution of all required documents.
+    Warrant that no conflicts exist with other agreements/employment.
+    Prohibit use of third-party IP unless authorized in writing.
+]
+termination_clause: [
+    State valid conditions for termination (for cause, convenience, breach).
+    Specify notice period (e.g., 30 days).
+    List all surviving clauses/rights post-termination.
+]
+dispute_resolution: [
+    Mandatory mediation step before any litigation.
+    Specify legal jurisdiction, venue.
+    Winner awarded attorney fees.
+]
+amendment_procedure: [
+    Changes only valid if in writing and signed by authorized representatives of both parties.
+]
+force_majeure: [
+    No liability for events outside reasonable control (natural disaster, war, government action).
+]
+signatures: [
+    Physical or electronic signatures required.
+    Must include dates, printed names, titles.
+]
+jurisdiction: [
+    Specify exclusive court system/location for all disputes (e.g., State of Delaware).
+]
+remedies_for_breach: [
+    Damages, specific performance, and contract termination as cumulative potential remedies.
+]
+assignment_of_agreement: [
+    State whether rights/obligations may be assigned or transferred; require prior written consent if restricted.
+]
+notice_methods: [
+    List valid delivery channels (email, registered mail, courier); designate recipient contacts/addresses.
+]
+governing_law: [
+    Specify state or country governing law.
+]
+attachments_and_exhibits: [
+    List and reference all supplemental documents (schedules, specifications, statements of work).
+]
+boilerplate_clauses: [
+    Entire agreement: supersedes all prior written/oral agreements.
+    Severability: unenforceable clause does not invalidate remainder.
+    Headings: descriptive only, do not affect interpretation.
+]
+compliance_statement: [
+    Each party warrants ongoing compliance with all applicable local, state, federal, and international laws, regulations.
+    Immediate notification required upon discovery of non-compliance.
+]
+audit_rights: [
+    Company reserves right to inspect, audit, and verify compliance at scheduled or random intervals.
+]
+exclusivity_clause: [
+    Supplier agrees to exclusive supply, prohibiting sales to competitors or other unauthorized entities.
+]
+non_compete_clause: [
+    Employee/contractor prohibited from providing similar services to competitors for X years post-termination.
+    Specify geographic scope, duration, and permitted exceptions.
+]
+IP_monitoring: [
+    Automated searches on the internet and social media for company IP (logos, text, trademarks).
+    Google Alerts and similar services set for relevant keywords.
+    Social profile scans performed for unauthorized use.
+    DMCA and cease & desist requests initiated if infringement detected.
+]
+data_protection: [
+    All personal data processed in strict accordance with applicable law (e.g., GDPR, CCPA, HIPAA).
+    Privacy policy required and referenced (URL).
+]
+trade_secret_provision: [
+    Mandatory secure storage of trade secrets.
+    Limit disclosure to authorized persons on need-to-know basis.
+    Immediate injunctive relief/remedy for breach.
+]
+contract_compliance_check: [
+    Random automated compliance audits scheduled through the lifecycle of the agreement.
+]

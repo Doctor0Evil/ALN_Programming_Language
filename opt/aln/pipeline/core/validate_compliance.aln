@@ -1,0 +1,46 @@
+#!/usr/bin/env aln
+# ====================================================================
+# FILE: validate_compliance.aln
+# PURPOSE: Universal Compliance Validation and Audit Report Generator
+# AUTHOR: ALN Research Systems
+# SECURITY LEVEL: 5 (Isolated Sandbox Verified)
+# ====================================================================
+
+system.audit:
+  initialize:
+    - log: ">>> [ALN COMPLIANCE VALIDATOR] Launching validation sequence..."
+    - verify_permissions: ["read", "write"]
+    - integrity_hashing: "sha256"
+    - compliance_file: "/opt/aln/config/.aln-compliance-figure"
+    - runtime_sandbox: true
+
+audit.process:
+  - stage: invariant_check
+    perform:
+      - inspect_keys: ["no_cage_clause", "web5_only", "ai_equal_rights"]
+      - validate_license_integrity: true
+  - stage: registry_lock
+    perform:
+      - verify_files_exist: ["/opt/aln/registry/personas.yaml", "/opt/aln/registry/personas.lock"]
+      - check_hash_match: "registry_sha256"
+  - stage: runtime_purity
+    perform:
+      - verify_empty_dir: ".runtime-artifacts"
+      - policy_on_violation: "auto_cleanup + alert"
+
+report.generate:
+  format: json
+  output_path: "/opt/aln/reports/compliance_report.aln"
+  content:
+    compliance_status: "PASS_OR_FAIL"
+    last_validation_time: "@timestamp"
+    operator_signature: "@current_user"
+    verified_checksum: true
+    system_integrity_score: "computed_value"
+  retention_days: 90
+  encryption: "AES-256-V2"
+
+exit_sequence:
+  on_success: "log: '✅ Validation completed cleanly.'"
+  on_failure: "log: '❌ Compliance regression detected.'"
+  always: "safe_exit: true"

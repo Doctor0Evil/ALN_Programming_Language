@@ -1,0 +1,5 @@
+@AI_CHAT_MODULE { 
+  def: "Compliant chat config", 
+  sorting: "aln_syntax", 
+  jsf_mode: "active" 
+}

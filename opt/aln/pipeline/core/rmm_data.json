@@ -1,0 +1,24 @@
+﻿[
+  {
+    "risk_id": "RISK-001",
+    "risk_description": "Hardcoded timestamps may cause audit trail inconsistencies or replay attacks",
+    "likelihood": 3,
+    "impact": 5,
+    "risk_score": 15,
+    "mitigation_strategy": "Replace all static timestamps with dynamic @NOW() functions at runtime",
+    "owner": "DevOps Lead",
+    "status": "Blocked",
+    "verification_method": "Unit test + CI/CD validation"
+  },
+  {
+    "risk_id": "RISK-004",
+    "risk_description": "enable-isolated-web-app-dev-mode enabled in production → potential exposure of debug endpoints",
+    "likelihood": 4,
+    "impact": 5,
+    "risk_score": 20,
+    "mitigation_strategy": "Enforce policy: disable dev mode unless explicitly authorized via RBAC + time-bound token",
+    "owner": "Security Officer",
+    "status": "Blocked",
+    "verification_method": "Policy enforcement script + audit log scan"
+  }
+]

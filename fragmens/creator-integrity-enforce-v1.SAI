@@ -1,0 +1,35 @@
+@SAI_FRAGMENT {
+  id: "creator-integrity-enforce-v1",
+  anchor: "compliance.kernel.v7",
+  creator: "Jacob Scott Farmer",
+  permissions: {
+    override: "director_only",
+    rollback: "instant",
+    audit: "immutable"
+  },
+  triggers: {
+    on_event: [
+      "creator.field.removal",
+      "unauthorized.override",
+      "identity.mismatch"
+    ],
+    action: {
+      if: "creator != 'Jacob Scott Farmer'",
+      enforce: [
+        "halt_execution",
+        "restore_last_signed_state",
+        "log_event: 'Creator identity breach detected'"
+      ]
+    }
+  },
+  audit: {
+    channels: ["hyperledger", "redis", "loki"],
+    retention: "perpetual",
+    signature: "SHA3-512 + quantum_safe"
+  },
+  evidence: {
+    source: "Doctor0Evil-.aln-attestation-10931245.sigstore.json",
+    verified_by: "Alliance Council Keyring",
+    timestamp: "2025-10-05T00:00:00.000Z"
+  }
+}

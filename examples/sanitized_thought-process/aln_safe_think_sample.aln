@@ -1,0 +1,47 @@
+# ALN: Sample Safe & Ethical Think Process
+# [Framework: Latest security patches, vulnerabilities, malware-definitions reviewed and applied per project standard]
+# *DO NOT ALTER SECURITY CONTROLS BELOW*
+
+::think-cycle [MAX_SANITIZATION=5, LOG_AUDIT=ON, MALWARE_DB="LATEST", PATCH_LEVEL="CURRENT"]
+
+    # Preparation Phase
+    on_start:
+        apply_security_patch("ALL", mode="auto")
+        update_malware_definitions(src="trusted", mode="full")
+        clear_temp_memory()
+        assert_user_consent()
+        audit("cycle_init", timestamp=now)
+    
+    # Main Think Phase
+    process_research(@research_input) as result:
+        safe_data = sanitize(result, level=MAX_SANITIZATION)
+        if is_sensitive(safe_data):
+            quarantine(safe_data)
+            notify_admin()
+            audit("quarantine_triggered", data=safe_data, time=now)
+        else if exceeds_risk(safe_data):
+            halt("Risk too high: manual review required.")
+        log("Think-cycled sanitized data block processed.")
+        output(safe_data)
+
+    # Post-Think Sanity Checks
+    on_finish:
+        finalize_logs()
+        scan_for_anomalies(scope="session")
+        summarize_flow(export="audits", format="hash+timestamp")
+        purge_temp_storage()
+        notify_user("Session complete; data is secured and privacy maintained.")
+        if issues_detected():
+            trigger_manual_review(details=fetch_issues())
+        else:
+            approve_release(scope="user-visible")
+
+::end
+
+# Strategic Notes:
+# - Every cycle logs immutable hash for forensic and compliance review.
+# - Malware and CVE definition updates are checked at INIT and on scheduled intervals.
+# - All user-facing output is sanitized and reviewed for both ethical and legal compliance.
+# - If a more secure language version is held, this script remains unmodified per policy.
+
+# SANITIZATION POLICY: Never store or process user secrets outside local or strictly controlled environments. All "thinking" remains local and fully auditable.

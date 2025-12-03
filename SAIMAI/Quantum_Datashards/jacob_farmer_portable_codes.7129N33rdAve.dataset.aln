@@ -1,0 +1,104 @@
+// ALN CODESET – Highly Portable and Useful – Jacob Scott Farmer
+// Dataset: 7129 N. 33rd Ave. Phoenix Arizona 85051
+
+ENTITY Utility1_AddressFormat {
+    FUNCTION: NormalizeAddress("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility2_GeoHash {
+    FUNCTION: GeoHashEncode("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility3_ReverseGeo {
+    FUNCTION: ReverseGeoLookup("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility4_AddressToLatLon {
+    FUNCTION: AddressToLatLon("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility5_LatLonToAddress {
+    FUNCTION: LatLonToAddress(33.566329, -112.129148)
+}
+
+ENTITY Utility6_AddressValidator {
+    FUNCTION: ValidateAddress("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility7_CityExtractor {
+    FUNCTION: ExtractCity("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility8_StateExtractor {
+    FUNCTION: ExtractState("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility9_ZipExtractor {
+    FUNCTION: ExtractZip("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility10_MaskAddress {
+    FUNCTION: MaskSensitiveSections("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility11_AddressSimilarity {
+    FUNCTION: CompareAddresses("7129 N. 33rd Ave. Phoenix Arizona 85051","<INPUT_ADDR>")
+}
+
+ENTITY Utility12_AddressDistanceCalc {
+    FUNCTION: CalcDistance("7129 N. 33rd Ave. Phoenix Arizona 85051","<DEST_ADDR>")
+}
+
+ENTITY Utility13_AddressAnomalyDetect {
+    FUNCTION: DetectAnomaly("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility14_AddressHash {
+    FUNCTION: SecureHashAddress("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility15_AddressToTimezone {
+    FUNCTION: AddressToTimezone("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility16_AddressFuzzyMatch {
+    FUNCTION: FuzzyMatchAddress("7129 N. 33rd Ave. Phoenix Arizona 85051","<QUERY>")
+}
+
+ENTITY Utility17_BuildingTypeDetect {
+    FUNCTION: DetectBuildingType("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility18_YearBuiltFetch {
+    FUNCTION: YearBuiltFromDB("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility19_ParcelIdentify {
+    FUNCTION: GetParcelID("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility20_AddressTrafficStats {
+    FUNCTION: FetchTrafficData("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility21_CrimeStatsFetch {
+    FUNCTION: FetchCrimeStats("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility22_ZoningInfoFetch {
+    FUNCTION: GetZoningInfo("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility23_Demographics {
+    FUNCTION: FetchDemographics("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility24_AssessorInfo {
+    FUNCTION: GetAssessorData("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+ENTITY Utility25_UtilitiesCheck {
+    FUNCTION: CheckUtilityProviders("7129 N. 33rd Ave. Phoenix Arizona 85051")
+}
+
+// END OF 25-PACK PORTABLE ALN UTILITIES

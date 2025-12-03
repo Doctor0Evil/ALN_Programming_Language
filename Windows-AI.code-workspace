@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "Windows-AI/Windows-AI"
+		},
+		{
+			"name": "Windows-AI",
+			"path": "Perplexity.PC-Perplexity-SAI/Windows-AI"
+		},
+		{
+			"name": "Perplexity.PC",
+			"path": "Perplexity.PC-Perplexity-SAI/Perplexity.PC"
+		}
+	],
+	"settings": {}
+}

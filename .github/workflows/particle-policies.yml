@@ -1,0 +1,63 @@
+name: Particle Policies Enforcement
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'particles/**'
+      - 'fragments/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'particles/**'
+      - 'fragments/**'
+
+concurrency:
+  group: particle-policies-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-particles:
+    runs-on: ubuntu-latest
+    name: Validate Particle and Fragment Files
+
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v3
+
+      - name: Setup Python for validation scripts
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Validation Dependencies
+        run: |
+          python -m pip install pyyaml
+
+      - name: Run Particle Policy Compliance Checks
+        run: |
+          # Example check: ensure all .SAI fragments in /fragments comply with naming convention
+          python -c "
+import os
+import sys
+
+def check_filenames(base_dir, extension, allowed_prefixes):
+    errors = []
+    for root, dirs, files in os.walk(base_dir):
+        for file in files:
+            if file.endswith(extension):
+                if not any(file.startswith(prefix) for prefix in allowed_prefixes):
+                    errors.append(file)
+    if errors:
+        print('Incorrectly named files:', errors)
+        sys.exit(1)
+
+# Customize allowed prefixes as needed
+allowed_fragment_prefixes = ['absolute-sovereignty', 'chmod-9000', 'initblockchaintransactions', 'multiwalletorchestration', 'superintelligencealignmentresponse', 'governancethresholdsandfallbacks', 'intelligenceintegration', 'intelligenceverificationscript', 'nanoswarmcheckpointrunner']
+allowed_particle_prefixes = ['chmod9000permsync', 'web5txinit', 'multiwalletorchestration', 'alignmentethicsresponse', 'governancefallbacks', 'intelligenceintegration', 'intelligenceverifier', 'nanoswarmcheckpoint']
+
+check_filenames('fragments', '.SAI', allowed_fragment_prefixes)
+check_filenames('particles', '.aii', allowed_particle_prefixes)
+"

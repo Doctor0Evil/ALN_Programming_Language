@@ -1,0 +1,2 @@
+main enforce_nanoswarm_integrity := universal_input_sanitization() & continuous_asset_audit() & enterprise_db_integrity_check() & superliquid_j.s.f_compliance() & binary_event_log()
+// ALN one-liner for default nanoswarm/ALN/j.s.f. security operations: maintains sanitized input, continuous asset and database audits, and exclusive SuperLiquid Labs compliance for all enterprise and modular deployments[attached_file:1][attached_file:3].

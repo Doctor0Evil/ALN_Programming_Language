@@ -1,0 +1,87 @@
+name: ALN Superintelligence Repository Repair & Automation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      repair_level:
+        description: 'Depth of Repair (shallow, deep, full)'
+        required: true
+        default: 'deep'
+
+jobs:
+  gather-metrics:
+    name: Collect System Metrics
+    runs-on: ubuntu-latest
+    outputs:
+      cpu: ${{ steps.metrics.outputs.cpu }}
+      memory: ${{ steps.metrics.outputs.memory }}
+    steps:
+      - name: System Performance Metrics
+        id: metrics
+        run: |
+          echo "cpu=$(cat /proc/loadavg | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "memory=$(free -m | awk '/Mem:/ {print $3}')" >> $GITHUB_OUTPUT
+
+  repair-workflows:
+    name: Deep Workflow Repair
+    runs-on: ubuntu-latest
+    needs: gather-metrics
+    if: ${{ needs.gather-metrics.outputs.cpu < 2 && needs.gather-metrics.outputs.memory < 2048 }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: ALN Workflow Repair Core
+        run: |
+          aln repair_workflows --depth=${{ github.event.inputs.repair_level }}
+      - name: Commit Repaired Files
+        run: |
+          git config --global user.name 'aln-bot'
+          git config --global user.email 'aln-bot@users.noreply.github.com'
+          git add .github/workflows/*
+          git commit -m "Auto-repaired workflows using ALN"
+          git push
+
+  ai-validation:
+    name: AI Validation and Testing
+    runs-on: ubuntu-latest
+    needs: repair-workflows
+    strategy:
+      matrix:
+        ai_suite: [core, compliance, cognitive]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ALN AI Test Suite
+        run: |
+          aln validate --suite=${{ matrix.ai_suite }}
+
+  approval-gate:
+    name: Approval & Notifications
+    runs-on: ubuntu-latest
+    needs: ai-validation
+    steps:
+      - name: Request Manual Approval from Security Team
+        uses: hmarr/await-approval-action@v1
+        with:
+          approvers: security-team
+      - name: Notify On Successful Repair
+        if: ${{ success() }}
+        run: |
+          aln notify --target=devops --message="Workflows repaired, validated, ready for merge."
+      - name: Notify On Failure
+        if: ${{ failure() }}
+        run: |
+          aln notify --target=devops --message="Workflow repair or validation failed. Manual intervention required."
+
+  parallel-execution:
+    name: Parallel Deep Repair (for large repos)
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.repair_level == 'full' }}
+    strategy:
+      matrix:
+        dir: [src, tests, docs, workflows]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deep Repair in ${{ matrix.dir }}
+        run: |
+          aln deep_repair --target=${{ matrix.dir }}

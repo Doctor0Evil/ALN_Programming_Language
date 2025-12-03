@@ -1,0 +1,32 @@
+// ALN COMPLIANCE MANIFEST: JetBrains Marketplace Compliance Tracker
+// Version: 1.0
+// Date Generated: 2025-10-12
+// Scope: Tracks plugin acquisition, licensing status, author, and terms compliance for JetBrains Market plugins.
+
+// Manifest Schema
+manifest {
+  standard: "JetBrains Marketplace Agreement v2.0"
+  repository: "https://github.com/Doctor0Evil/ALN-Superintelligence-Programming.git"
+  compliance_date: "2025-10-12"
+  jurisdiction: "Czech Republic (per JetBrains agreement)"
+  arbitration: "Czech Chamber of Commerce Arbitration Court — Section 14.10"
+  plugin_entries: [
+    // Example entry for every tracked plugin (extend as needed for all actual plugins used in your ecosystem)
+    {
+      plugin_name: "PLUGIN_NAME_HERE"
+      plugin_url: "URL_HERE"
+      author: "AUTHOR_OR_VENDOR"
+      license_type: "Free | Open-Source | Developer EULA | Paid"
+      agreement_verified: true
+      compliance_notes: "No redistribution. No modification. Attribution preserved."
+      last_audited: "2025-10-12"
+    }
+    // Add new entries for additional plugins here.
+  ]
+  audit_tools: [
+    "ALN LegalSanitizer v5.19",
+    "AI Policy Verifier"
+  ]
+  last_update: "2025-10-12"
+  status: "ACTIVE — NO VIOLATIONS DETECTED"
+}

@@ -1,0 +1,11 @@
+<aln-asset-discovery 
+  mode="full-safemode"
+  blockchains="all"
+  features="address-clustering,token-tracking,smart-contract-analysis,kyc-verification,policy-matrix-check"
+  output="compliance-summary"
+  simulate="qpu"
+  kyc-did="true"
+  log="full"
+  debug="display"
+  export="policy/ALN/safemode/asset-discovery/"
+/>

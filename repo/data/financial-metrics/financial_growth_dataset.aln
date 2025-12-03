@@ -1,0 +1,36 @@
+# ALN Data Ingestion Definition
+@dataset "Corporate_Financial_Growth_2025Q4"
+@source "/repo/data/financial-metrics/paste.txt"
+@schema {
+   symbol: string,
+   companyName: string,
+   growthRevenue: float,
+   growthNetIncome: float,
+   growthEBITDA: float,
+   growthEPS: float,
+   growthEPSDiluted: float,
+   revenue: float,
+   netIncome: float,
+   ebitda: float,
+   marketCap: float,
+   peRatio: float,
+   eps: float,
+   returnOnEquityTTM: float,
+   freeCashFlowToEquityTTM: float,
+   workingCapitalTTM: float,
+   netDebtToEBITDATTM: float
+}
+@compliance {
+   encryption: AES-256
+   classification: "Financial-Non-PII"
+   retentionPolicy: "SecureArchive-7yrs"
+   integrityCheck: sha512
+}
+@operations {
+   ingestMode: "append"
+   normalize: true
+   verifyDataTypes: strict
+   sanitizeNulls: true
+   deduplicateOn: symbol
+}
+@output "financial_growth_index_2025"

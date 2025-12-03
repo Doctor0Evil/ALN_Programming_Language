@@ -1,0 +1,46 @@
+name: Automated Billing Error Diagnosis & Repair
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * SUN"  # weekly scan
+
+jobs:
+  billing-health-check:
+    name: Audit Billing Settings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Billing Status
+        run: |
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/orgs/${{ github.repository_owner }}/settings/billing > billing-status.json
+      - name: Review Billing Status
+        run: |
+          jq '.payment_method, .unpaid_invoices, .spending_limit' billing-status.json
+      - name: Run ALN Billing Repair Logic
+        run: |
+          aln diagnose_billing --input billing-status.json --auto-fix
+
+  invoice-resolution:
+    name: Invoice & Spending Limit Fix
+    runs-on: ubuntu-latest
+    needs: billing-health-check
+    steps:
+      - name: Resolve Unpaid Invoices
+        run: |
+          aln fix_invoices --auto-pay --notify-owner
+      - name: Adjust Spending Limit
+        run: |
+          aln set_spending_limit --limit=300
+      - name: Update Payment Method
+        run: |
+          aln update_payment_method --secure
+
+  notification:
+    name: Notify Admin of Results
+    runs-on: ubuntu-latest
+    needs: invoice-resolution
+    steps:
+      - name: Email Billing Status Report
+        run: |
+          aln send_report --recipient=admin@yourdomain.com --subject="Billing Repair Results"

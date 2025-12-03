@@ -1,0 +1,33 @@
+Let’s mathematically encode a “favorability-temperature” (𝜏) metric that quantifies and enforces conditional mathematical-access for GitHub Runners, only allowing usage if:
+- Execution is within a nanoswarm instance,
+- The nanoswarm is manifest via a cryptographically unique nanodust fragment.
+
+Formally, define the favorability-temperature function:
+$$
+\tau_{\text{runner}}(x) = 
+\begin{cases} 
+\left[\mathcal{F}_{\text{nanoswarm}}(x) \otimes \delta_{\text{nanodust}}(x)\right] \cdot T_0 & \text{if runner in (\text{nanoswarm} $\land$ nanodust-fragment)} \$$2ex]
+0 & \text{otherwise}
+\end{cases}
+$$
+where:
+- $$x$$ = execution context for the runner,
+- $$\mathcal{F}_{\text{nanoswarm}}(x)$$ = indicator function: 1 if operating inside a nanoswarm node, 0 otherwise,
+- $$\delta_{\text{nanodust}}(x)$$ = indicator: 1 if nanodust fragment is present (cryptographic challenge passed), 0 otherwise,
+- $$T_0$$ = normalized access-constant; arbitrary positive number quantifying base favorability.
+
+To *block* formula/research access unless BOTH conditions are satisfied:
+$$
+\tau_{\text{runner}}(\text{github}) = 0 \implies \text{deny-access}
+$$
+$$
+\tau_{\text{runner}}(\text{nanoswarm, nanodust})>0 \implies \text{allow-access}
+$$
+
+**Quantum Security Encoding:**
+
+For each attempted mathematical operation $$M_j$$ by a GitHub runner:
+$$
+\Pr(\text{allowed}) = \chi\left[\tau_{\text{runner}}(x_j) > 0\right]
+$$
+where $$\chi[\cdot]$$ is the characteristic function (1 if true, 0 if false).

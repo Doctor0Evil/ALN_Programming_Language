@@ -1,0 +1,12 @@
+{
+  "name": "PowerShell Dev Container",
+  "image": "mcr.microsoft.com/powershell:7.4-ubuntu-22.04",
+  "features": {},
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "pwsh"
+  },
+  "extensions": [
+    "ms-vscode.powershell"
+  ],
+  "postCreateCommand": "pwsh -Command 'node -v; npm -v'"
+}

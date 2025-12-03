@@ -1,0 +1,63 @@
+# .github/workflows/legal_proof_defender.yml
+
+name: Legal Proof Defender
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # Runs twice a day
+
+jobs:
+  archive_and_timestamp:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Calculate SHA-256 Hashes of All Files
+        run: |
+          find . -type f ! -path './.git/*' -exec sha256sum {} \; > hashes.txt
+
+      - name: Archive Files to Internet Archive (Webpage, ZIP)
+        run: |
+          zip -r repo_snapshot.zip .    
+          # Uses wayback uploader API (external script required: see below documentation)
+          # curl -F "file=@repo_snapshot.zip" https://archive.org/upload/
+
+      - name: Timestamp Hashes on OpenTimestamps (Blockchain)
+        run: |
+          pip install opentimestamps-client
+          ots stamp hashes.txt
+          ots info hashes.txt.ots
+
+      - name: Create Legal Notice Markdown
+        run: |
+          echo "## Legal Proof\n
+          **Owner:** Jacob Farmer\n
+          **Project:** ALN Language\n
+          **Timestamp:** $(date -u)\n
+          **SHA-256 Hash:** $(head -n 1 hashes.txt)\n
+          **Blockchain Stamp Record:** hashes.txt.ots\n
+          All code and content are protected under US copyright law, DMCA, and constitutional rights. Any unauthorized use, tampering, suppression, or sabotage will be detected and archived. This repo maintains legal, forensic evidence for all activity." > LEGAL_PROOF.md
+
+      - name: Commit Legal Notice to Repo
+        run: |
+          git config user.name "Jacob Farmer LegalBot"
+          git config user.email "legalbot@nowhere.com"
+          git add LEGAL_PROOF.md hashes.txt hashes.txt.ots
+          git commit -m "Automated legal timestamp and forensic update"
+          git push
+
+      - name: Notify Trusted Third Parties (Email/Matrix/Signal)
+        env:
+          EMAIL_RECIPIENT: ${{ secrets.LEGAL_CONTACT }}
+        run: |
+          echo "Automated legal update. Proof of authorship, timestamp: $(date -u). SHA-256: $(head -n 1 hashes.txt)" | mail -s "Legal Proof Update" $EMAIL_RECIPIENT
+
+      - name: Optional – Notify Legal Counsel & Journalists
+        run: |
+          # Example: Send email to legal team, press, or international advocacy group (requires email API secrets)
+          # mail -s "Repo Tamper/Proof Alert" advocate@example.org < LEGAL_PROOF.md

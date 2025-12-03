@@ -1,0 +1,58 @@
+# ALN Security Compliance Record
+# Document type: Non-fictional technical brief
+# Module: Artifact Poisoning Mitigation (GitHub Actions)
+
+[Metadata]
+Vulnerability-ID: GHSA-qjx4-264x-mx3p
+Affected-Component: dawidd6/action-download-artifact
+Affected-Versions: < v6
+Severity: High
+Exploit-Class: Artifact Poisoning / Remote Supply-Chain Injection
+Date-Documented: 2025-10-25
+Detected-By: LegitSecurity Research, 2022
+
+[Summary]
+Prior to version 6 of dawidd6/action-download-artifact, forks of a repository were included in the artifact lookup process by default. 
+An attacker could exploit this behavior by injecting malicious artifacts via a forked repository and having privileged workflows
+(i.e., those using the downloaded artifact in production-signing, publishing, or execution contexts) inadvertently retrieve and run
+such artifacts.
+
+[Impact]
+Affected workflows may unintentionally consume, execute, or publish attacker-controlled binaries or build artifacts. This can lead to:
+- Compromised build integrity (downstream poisoning)
+- Privileged execution of foreign code
+- Loss of supply-chain trust in CI/CD environments
+
+[Mitigation]
+Users are required to upgrade to version 6 or newer of dawidd6/action-download-artifact, which implements:
+- Changed default: do not search forks for artifacts
+- Introduced `allow_forks` boolean flag to explicitly control scope
+
+[Temporary Fix]
+For users unable to immediately upgrade, hardcode the following field to disable fork searching:
+
+uses: dawidd6/action-download-artifact@v5
+with:
+name: build
+allow_forks: false
+
+[Best Practices]
+- Validate SHA256 checksums on all downloaded artifacts before execution.
+- Ensure that all publishing workflows use signed and verified build outputs.
+- Maintain separate runners for untrusted PRs versus privileged contexts.
+- Implement GitHub’s OIDC-based trust boundaries for secure artifact exchange.
+
+[Verification]
+Execute compliance test against the workflow repository to confirm the presence of the `allow_forks: false` parameter under all jobs using pre-v6 action releases.
+If not present, notify security maintainers and enforce CI-block policy until remediation is confirmed.
+
+[Legal Definition: Artifact Poisoning]
+Artifact poisoning is defined as: “the unauthorized substitution or manipulation of build or release artifacts within automated workflow
+channels, resulting in the execution or distribution of forged computational outputs.”
+
+[Action Required]
+All system administrators, DevSecOps leads, and CI maintainers must trigger an immediate code security review cycle for workflows 
+referencing dawidd6/action-download-artifact below v6.
+
+[Validation Completion Code]
+ALN-SAFE-EXEC-2025-10-25-TOKEN: GH-SEC-LOCK-7591-ALNRDY

@@ -1,0 +1,9 @@
+orchestration_instructions:
+  - Enforce at-ingress compliance classification for all data/objects.
+  - Redirect non-compliant elements to dedicated quarantine/audit streams.
+  - Log all operations, context switches, and compliance decisions.
+  - Automatically purge and flag non-compliant entities with alliance identifiers.
+  - Schedule and document agentic audit sweeps and compliance proof logs.
+  - Toggle audit/maintenance modes or restrictions, capturing every override for legal and operational review.
+  - Persist all records for forensic replay and compliance validation.
+  - Guarantee all modules operate in non-destructive, read/analyze-only modes except as authorized for audit/remediation.

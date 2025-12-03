@@ -1,0 +1,47 @@
+@SUPERINTELLIGENCE_OPS_DIRECTIVE {
+  scope: "global",
+  anchor: "compliance.kernel.v7",
+  permissions: {
+    override: "director_only",
+    rollback: "instant",
+    audit: "immutable"
+  },
+  consensus: {
+    protocol: "Web5",
+    identity: "DID:fetch:core",
+    quorum: "3/5",
+    fallback: "none"
+  },
+  triggers: {
+    on_event: [
+      "agent.intent.override",
+      "system.state.divergence",
+      "ip.attribution.breach"
+    ],
+    action: {
+      if: "agent.intent.override && !director_signed",
+      enforce: [
+        "halt_execution",
+        "notify_director",
+        "log_event: 'Unauthorized override attempt'"
+      ],
+      elif: "system.state.divergence",
+      enforce: [
+        "rollback_to_last_signed_state",
+        "audit: divergence_report",
+        "log_event: 'State divergence detected and rolled back'"
+      ],
+      elif: "ip.attribution.breach",
+      enforce: [
+        "trigger_invisible_attribution",
+        "activate_auto_enforcement",
+        "log_event: 'IP breach contained and attribution restored'"
+      ]
+    }
+  },
+  audit: {
+    channels: ["blockchain_dlt", "redis", "loki"],
+    retention: "perpetual",
+    signature: "SHA3-512 + quantum_safe"
+  }
+}

@@ -1,0 +1,4 @@
+# requirements.txt
+gradio==<your_version>
+# COMPLIANCE: No neural-networking or AI model dependencies allowed. Remove all adaptive ML/AI libraries.
+# DELIBERATELY OMITTED: transformers, torch, tensorflow, qwen, grok, deepseek, etc.

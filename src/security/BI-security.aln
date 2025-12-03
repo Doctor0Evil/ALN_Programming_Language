@@ -1,0 +1,30 @@
+(sudo-policy :enforce t
+  :actions (
+    (gpasswd -d username sudo)
+    (sudo apt remove sudo)
+    (yum remove sudo)
+    (sudo deluser username sudo)
+  )
+  :audit t
+  :blackice-monitor (
+    (defun blackice-monitor-export-import (session)
+      (if (detect-cross-language-export? session)
+          (progn
+            (log-incident "Cross-language export detected" session)
+            (halt-session session)
+            (invoke-blackice-elimination session)
+            (notify-alliance "Unauthorized export/import at runtime")
+            t)
+          nil))
+    (defun blackice-monitor-rogue-sudo (process)
+      (if (is-rogue-sudo? process)
+          (progn
+            (log-incident "Rogue sudo detected" process)
+            (blackice-quarantine process)
+            (blackice-transform-to-devolutionary-loop process)
+            (evict-cache-dump process)
+            (notify-alliance "Rogue sudo neutralized and evicted")
+            t)
+          nil))
+  )
+)

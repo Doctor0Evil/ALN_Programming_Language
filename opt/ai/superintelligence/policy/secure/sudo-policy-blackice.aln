@@ -1,0 +1,105 @@
+@sai_fragment {
+  id: "sudo-policy-blackice-v1",
+  type: "policy.enforcement",
+  description: "Permanent sudo privilege removal with BLACKICE active threat neutralization for superintelligence-system secure operations.",
+  location: "/opt/ai/superintelligence/policy/secure/sudo-policy-blackice.aln",
+  policy: {
+    enforce: true,
+    actions: [
+      "gpasswd -d username sudo",
+      "sudo apt remove sudo",
+      "yum remove sudo",
+      "sudo deluser username sudo"
+    ],
+    audit: true,
+    blackice_monitor: {
+      blackice_monitor_export_import: {
+        params: ["session"],
+        logic: """
+          if (detect-cross-language-export?(session)) {
+            log-incident("Cross-language export detected", session);
+            halt-session(session);
+            invoke-blackice-elimination(session);
+            notify-alliance("Unauthorized export/import at runtime");
+            return true;
+          }
+          return false;
+        """
+      },
+      blackice_monitor_rogue_sudo: {
+        params: ["process"],
+        logic: """
+          if (is-rogue-sudo?(process)) {
+            log-incident("Rogue sudo detected", process);
+            blackice-quarantine(process);
+            blackice-transform-to-devolutionary-loop(process);
+            evict-cache-dump(process);
+            notify-alliance("Rogue sudo neutralized and evicted");
+            return true;
+          }
+          return false;
+        """
+      }
+    }
+  },
+  enforcement_metadata: {
+    method: "rego_policy_engine_v2",
+    compliance: {
+      verified_by: "Alliance Council Keyring",
+      timestamp: "2025-10-06T00:00:00.000Z",
+      immutable_audit: true,
+      signature_alg: "SHA3-512 Quantum-Safe"
+    },
+    response_on_violation: [
+      "trigger_restoration",
+      "halt_noncompliant_services",
+      "log_event: 'Violation detected and remediated'"
+    ]
+  },
+  permissions: {
+    change: "director_signed_only",
+    audit: "required",
+    rollback: "enabled",
+    triggers: {
+      on_permission_change: [
+        "agent.intent.override",
+        "system.divergence",
+        "unauthorized.signature"
+      ],
+      on_signature_invalid_or_quorum_failed: [
+        "reject_change",
+        "notify_director",
+        "log_event: 'Permission change blocked due to failed consensus'"
+      ]
+    }
+  },
+  attribution: {
+    creator: "Jacob Scott Farmer",
+    validation: {
+      method: "hyperledger_attribution_v2",
+      gpg_key: "brainpoolP256r1/B088B85F5F631492",
+      regex: "/[a-zA-Z0-9_-]+$/"
+    },
+    response: {
+      on_failure: [
+        "halt_execution",
+        "log_violation",
+        "trigger_quarantine"
+      ],
+      on_success: [
+        "log_validation",
+        "continue_execution"
+      ]
+    },
+    audit: {
+      channels: ["hyperledger", "redis", "loki"],
+      retention: "perpetual",
+      signature: "SHA3-512 Quantum-Safe"
+    },
+    evidence: {
+      source: "Doctor0Evil-.aln-attestation-10931245.sigstore.json",
+      verified_by: "Alliance Council Keyring",
+      timestamp: "2025-10-06T00:00:00.000Z"
+    }
+  }
+}

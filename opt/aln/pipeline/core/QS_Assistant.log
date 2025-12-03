@@ -1,0 +1,38 @@
+[2025-08-16 12:24:43] [INFO] QS-Assistant environment initializing.
+[2025-08-16 12:24:43] [INFO] QS-Assistant initialized.
+[2025-08-16 12:25:09] [ERROR] Error calling QS API: The remote name could not be resolved: 'api.example-xai.com'
+[2025-08-16 12:25:09] USER: 'fix' the "powershell" module
+[2025-08-16 12:25:09] QS-Assistant: Error: Unable to retrieve response from AI backend.
+
+[2025-08-16 12:26:34] [INFO] Initialization started.
+[2025-08-16 12:26:34] [INFO] Initialization completed.
+[2025-08-16 12:26:48] [ERROR] API call failed: {
+    "error": {
+        "message": "Incorrect API key provided: True. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+[2025-08-16 12:26:48] [INFO] User: 'fix' powershell modules; Assistant: Sorry, I couldn't process your request due to an API error.
+[2025-08-16 12:27:10] [ERROR] API call failed: {
+    "error": {
+        "message": "Incorrect API key provided: True. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+[2025-08-16 12:27:10] [INFO] User: exit; Assistant: Sorry, I couldn't process your request due to an API error.
+[2025-08-16 12:27:15] [ERROR] API call failed: {
+    "error": {
+        "message": "Incorrect API key provided: True. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+[2025-08-16 12:27:15] [INFO] User: exit; Assistant: Sorry, I couldn't process your request due to an API error.
