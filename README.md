@@ -1,6 +1,6 @@
 ***
 
-# ALN-Superintelligence-Programming Ecosystem
+# ALN_Programming_Language Ecosystem
 _A shared, protected compliance framework for advanced superintelligence, nanotechnology, AI logic, and cybernetic system engineering, developed by Jacob Scott Farmer and Perplexity Labs Inc._
 
 ![ALN Compliance Charter](https://img.shields.io/badge/ALN%20Compliance-Enforced-brightgreen)
@@ -11,7 +11,7 @@ _A shared, protected compliance framework for advanced superintelligence, nanote
 ![Asset-Backed](https://img.shields.io/badge/Asset%20Backed-Terra%20Blockchain-lightgrey)
 
 ## Introduction
-This repository drives the ALN-Superintelligence-Programming ecosystem: a globally compliant, KYC/DID-verified research and operational environment for superintelligent code, auditable logic, nanotechnology, and ethical AI frameworks. It is a joint protected ecosystem of **Perplexity Labs Inc.** and Doctor0Evil, featuring authorship attribution, metadata embedding, blockchain-backed record-keeping via EthSign, and strict event-driven compliance policies especially for high-risk or market-influencing technologies.[2][3]
+This repository drives the ALN_Programming_Language ecosystem: a globally compliant, KYC/DID-verified research and operational environment for superintelligent code, auditable logic, nanotechnology, and ethical AI frameworks. It is a joint protected ecosystem of **Perplexity Labs Inc.** and Doctor0Evil, featuring authorship attribution, metadata embedding, blockchain-backed record-keeping via EthSign, and strict event-driven compliance policies especially for high-risk or market-influencing technologies.[2][3]
 
 ## Key Features
 - **Legal and Policy Protection:** System-wide legal validity and authorship guarantees, with every commit cryptographically signed and logged to immutable ledgers for copyright, compliance, and audit.[3][1][2]
