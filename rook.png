@@ -1,5 +1,0 @@
-asset "rook.png" {
-    type: "image",
-    description: "Classic rook chess icon, PNG format"
-    path: "./rook.png"
-}
