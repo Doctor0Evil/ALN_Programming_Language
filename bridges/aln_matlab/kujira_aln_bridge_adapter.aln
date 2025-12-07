@@ -1,0 +1,83 @@
+# ============================================================
+# ALN–MATLAB Bridge Adapter for Kujira Orphan→ALN-20 Mapping
+# Deterministic, production-ready, neuromorphic-safe
+# ============================================================
+
+module KujiraALNMatlabBridge(v1.0)
+{
+    imports:
+        math: floor, pow
+        crypto: SHA256
+        ffi: matlab_link   # abstract FFI handle to MATLAB engine
+        sys: telemetry
+
+    # --------------------------------------------------------
+    # 1. Canonical hash (matches Section 3 + MATLAB stub)
+    # --------------------------------------------------------
+    func kujira_entry_hash(chain_id_bytes[], h_u64, denom_bytes[], addr_bytes[], B_u64)
+    {
+        h_bytes = u64be(h_u64)
+        B_bytes = u64be(B_u64)
+        preimage = concat(chain_id_bytes, h_bytes, denom_bytes, addr_bytes, B_bytes)
+        return SHA256(preimage)
+    }
+
+    # --------------------------------------------------------
+    # 2. Allocation mapping (Section 4)
+    # --------------------------------------------------------
+    func aln_allocation(Bi_u128, d_src_u8, d_ALN_u8, cE_q64, cS_q64)
+    {
+        A_src = as_q128(Bi_u128) / pow(10, d_src_u8)
+        AE    = A_src * cE_q64
+        AS    = A_src * cS_q64
+        BE    = floor(AE * pow(10, d_ALN_u8))
+        BS    = floor(AS * pow(10, d_ALN_u8))
+        return { "AE": AE, "AS": AS, "BE": BE, "BS": BS }
+    }
+
+    # --------------------------------------------------------
+    # 3. Orphan predicate (Section 1)
+    # --------------------------------------------------------
+    func is_orphan_denom(registryFlag_u1, activityFlag_u1)
+    {
+        return (registryFlag_u1 == 0) and (activityFlag_u1 == 0)
+    }
+
+    # --------------------------------------------------------
+    # 4. MATLAB engine bridge
+    # --------------------------------------------------------
+    func init_matlab(session_name)
+    {
+        return matlab_link.open(session_name)
+    }
+
+    func export_snapshot_to_matlab(handle, entries[])
+    {
+        # entries: array of {chain_id_bytes, h, denom_bytes, addr_bytes, B}
+        matlab_link.put(handle, "snapshot_entries", entries)
+        matlab_link.eval(handle, "H = kujira_entry_hash_batch(snapshot_entries);")
+        return matlab_link.get(handle, "H")
+    }
+
+    func export_allocations_to_matlab(handle, alloc_params[])
+    {
+        # alloc_params: array of (Bi, d_src, d_ALN, cE, cS)
+        matlab_link.put(handle, "alloc_params", alloc_params)
+        matlab_link.eval(handle, "[AE, AS, BE, BS] = aln_allocation_batch(alloc_params);")
+        return {
+            "AE": matlab_link.get(handle, "AE"),
+            "AS": matlab_link.get(handle, "AS"),
+            "BE": matlab_link.get(handle, "BE"),
+            "BS": matlab_link.get(handle, "BS")
+        }
+    }
+
+    # --------------------------------------------------------
+    # 5. Neuromorphic / BCI hooks (telemetry only)
+    # --------------------------------------------------------
+    func bind_to_bci(device_id, channel_name)
+    {
+        telemetry.register_stream("BCI", device_id, channel_name)
+        telemetry.tag_stream(device_id, {"mode": "read_only", "class": "medical_research"})
+    }
+}
