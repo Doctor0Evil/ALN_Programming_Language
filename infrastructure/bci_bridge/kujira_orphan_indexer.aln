@@ -1,0 +1,115 @@
+# === ALN-20 Chain Bridge Module (Kujira→ALN) ===
+# Deterministic Orphan Denom Detector + ALN Allocation Mapper
+# Compatibility: ICS‑002 / ICS‑23 Light‑Client Verification
+# Target Platforms: Unreal‑Engine BCI Stack, Augmented‑User (AU) Layer, Medical‑Grade Neural Interface Nodes
+# ================================================================
+
+module KujiraOrphanIndexer(v1.7)
+{
+    imports:
+        crypto: SHA256
+        math: floor, pow
+        net: http_get
+        db: sql_engine
+        sys: merkle_utils, telemetry
+
+    constants:
+        KUJIRA_LCD = "https://kujira-api.polkachu.com"
+        SCHEMA_VERSION = "1.7.0"
+        MAX_PAGE_SIZE = 1000
+
+    # ------------------------------------------------------------------
+    # 1. Retrieve Balances (Off-chain Indexer)
+    # ------------------------------------------------------------------
+    func fetch_balances(address_list[], height):
+        records = []
+        for addr in address_list:
+            url = KUJIRA_LCD + "/cosmos/bank/v1beta1/balances/" + addr
+            if height != null:
+                url = url + "?height=" + str(height)
+            response = http_get(url)
+            for bal in response["balances"]:
+                rec = {
+                    "address": addr,
+                    "denom": bal["denom"],
+                    "amount": int(bal["amount"]),
+                    "height": height
+                }
+                records.push(rec)
+        return records
+
+    # ------------------------------------------------------------------
+    # 2. Denom Classification
+    # ------------------------------------------------------------------
+    func classify_denom(denom):
+        if denom.starts_with("ibc/"): return "ibc"
+        if denom.starts_with("factory/"): return "factory"
+        if denom.starts_with("gravity0x"): return "gravity"
+        return "native"
+
+    # ------------------------------------------------------------------
+    # 3. Orphan Detection Logic
+    # ------------------------------------------------------------------
+    func is_orphan_denom(registry_flag, activity_flag):
+        return (registry_flag == 0) and (activity_flag == 0)
+
+    func registry_check(denom): # registry lookup placeholder
+        return sql_engine.has_token(denom)
+
+    func activity_probe(denom): # external governance probe logic
+        return telemetry.chain_activity(denom)
+
+    # ------------------------------------------------------------------
+    # 4. Snapshot Hash Construction
+    # ------------------------------------------------------------------
+    func compute_entry_hash(chain_id, height, denom, address, balance):
+        encoded = chain_id + str(height) + denom + address + str(balance)
+        return SHA256(encoded)
+
+    func build_snapshot_hash(entries[]):
+        leaf_hashes = [compute_entry_hash(e.chain_id, e.height, e.denom, e.address, e.balance) for e in entries]
+        return merkle_utils.root(leaf_hashes)
+
+    # ------------------------------------------------------------------
+    # 5. ALN-20 Mapping Function
+    # ------------------------------------------------------------------
+    func aln_allocation(Bi, d_src, d_ALN, cE, cS):
+        A_src = Bi / pow(10, d_src)
+        AE = A_src * cE
+        AS = A_src * cS
+        BE = floor(AE * pow(10, d_ALN))
+        BS = floor(AS * pow(10, d_ALN))
+        return { "BE": BE, "BS": BS, "AE": AE, "AS": AS }
+
+    # ------------------------------------------------------------------
+    # 6. Verification Logic (Kujira Light‑Client)
+    # ------------------------------------------------------------------
+    func verify_membership(client_state, height, proof, path, value):
+        return merkle_utils.verify(client_state, height, proof, path, value)
+
+    func process_claim(event):
+        ok = verify_membership(event.client_state, event.height, event.proof, event.path, event.value)
+        if not ok:
+            throw("Invalid membership proof")
+
+        H_i = SHA256(event.chain_id + str(event.height) + event.denom + event.address + str(event.balance))
+        alloc = aln_allocation(event.balance, event.d_src, event.d_ALN, event.cE, event.cS)
+
+        if ledger.is_claimed(event.address, event.denom, event.height):
+            throw("Duplicate claim")
+
+        ledger.mint(event.address, "AU.ET", alloc.BE)
+        ledger.mint(event.address, "CSP", alloc.BS)
+        ledger.mark_claimed(event.address, event.denom, event.height)
+
+        return { "hash": H_i, "allocE": alloc.BE, "allocS": alloc.BS }
+
+    # ------------------------------------------------------------------
+    # 7. Neural Integration Layer (BCI Hooks)
+    # ------------------------------------------------------------------
+    func bind_to_neuromorphic_stream(device_id, signal_path):
+        sys.attach_interface("BCI", device_id, signal_path)
+        sys.log("Neuromorphic tether established for device: " + device_id)
+}
+
+# End of Module
