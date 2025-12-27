@@ -1,0 +1,123 @@
+name: ALN Public Dev-Tunnel
+
+on:
+  workflow_dispatch:
+    inputs:
+      ttl_minutes:
+        description: "Tunnel TTL in minutes (default: 50)"
+        required: false
+        default: "50"
+      tunnel_name:
+        description: "Optional tunnel name override"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 * * * *" # Hourly keep-alive / health check
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+env:
+  NODE_VERSION: "20"
+  ALN_TUNNEL_DEFAULT_TTL: "50"
+  ALN_TUNNEL_PORT: "4173"
+
+jobs:
+  aln-tunnel:
+    name: ALN Public Dev-Tunnel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install production dependencies
+        run: npm ci --ignore-scripts
+        env:
+          NODE_ENV: production
+
+      - name: ALN health spec (enterprise compliance)
+        run: |
+          if [ -f "src/cli/aln.js" ]; then
+            node src/cli/aln.js spec --compliance-level enterprise || exit 1
+          else
+            echo "ALN CLI not found at src/cli/aln.js"; exit 1;
+          fi
+
+      - name: ALN repo-planning self-check
+        run: |
+          node src/cli/aln.js plan-repo \
+            "Self-check: ensure ALN is operational for public tunnel."
+
+      - name: Determine tunnel parameters
+        id: tunnel_params
+        run: |
+          TTL_INPUT="${{ github.event.inputs.ttl_minutes }}"
+          TUNNEL_NAME_INPUT="${{ github.event.inputs.tunnel_name }}"
+
+          if [ -z "$TTL_INPUT" ]; then
+            TTL_INPUT="${ALN_TUNNEL_DEFAULT_TTL}"
+          fi
+
+          if [ -z "$TUNNEL_NAME_INPUT" ]; then
+            TUNNEL_NAME_INPUT="ALN-Public-DevTunnel-${GITHUB_RUN_ID}"
+          fi
+
+          echo "ttl_minutes=$TTL_INPUT" >> "$GITHUB_OUTPUT"
+          echo "tunnel_name=$TUNNEL_NAME_INPUT" >> "$GITHUB_OUTPUT"
+
+      - name: Start ALN dev server (background)
+        run: |
+          if [ -f "package.json" ]; then
+            if jq -e '.scripts["dev:tunnel"]' package.json > /dev/null 2>&1; then
+              npm run dev:tunnel -- --port ${ALN_TUNNEL_PORT} &
+            elif jq -e '.scripts["dev"]' package.json > /dev/null 2>&1; then
+              npm run dev -- --port ${ALN_TUNNEL_PORT} &
+            else
+              echo "No dev or dev:tunnel script defined in package.json"; exit 1;
+            fi
+          else
+            echo "package.json not found; cannot start dev server"; exit 1;
+          fi
+          echo "Waiting for dev server to start..."
+          sleep 15
+
+      - name: Start ALN public tunnel
+        env:
+          ALN_TUNNEL_TTL_MINUTES: ${{ steps.tunnel_params.outputs.ttl_minutes }}
+          ALN_TUNNEL_NAME: ${{ steps.tunnel_params.outputs.tunnel_name }}
+        run: |
+          if ! command -v npx >/dev/null 2>&1; then
+            echo "npx is required but not available."; exit 1;
+          fi
+
+          echo "Starting ALN tunnel '${ALN_TUNNEL_NAME}' (TTL=${ALN_TUNNEL_TTL_MINUTES}m)..."
+
+          npx aln tunnel \
+            --public \
+            --ttl "${ALN_TUNNEL_TTL_MINUTES}m" \
+            --name "${ALN_TUNNEL_NAME}" \
+            --port "${ALN_TUNNEL_PORT}"
+
+      - name: Post tunnel status to workflow summary
+        if: always()
+        run: |
+          {
+            echo "## ALN Public Dev-Tunnel Status"
+            echo ""
+            echo "- Run ID: \`${GITHUB_RUN_ID}\`"
+            echo "- Run Number: \`${GITHUB_RUN_NUMBER}\`"
+            echo "- Tunnel Name: \`${{ steps.tunnel_params.outputs.tunnel_name }}\`"
+            echo "- TTL (minutes): \`${{ steps.tunnel_params.outputs.ttl_minutes }}\`"
+            echo "- Repo: \`${GITHUB_REPOSITORY}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
